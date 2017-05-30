@@ -13,6 +13,8 @@ namespace Test_pharm_server
         {
             Server srv = new Server();
             srv.StartingOfServer();
+            Console.WriteLine("success!!!");
+            Console.ReadLine();
         }
     }
 }

@@ -186,9 +186,10 @@ namespace PharmaceuticalInformation.Server
             // Starting
             //
             // Timer Of Importing Data
-            TimerOfImportingData = 
-                new System.Threading.Timer(new System.Threading.TimerCallback(TimerOfImportingData_Tick), 
-                    null, new TimeSpan(0, 0, 0), new TimeSpan(0, 1, 0));
+            //TimerOfImportingData = 
+            //    new System.Threading.Timer(new System.Threading.TimerCallback(TimerOfImportingData_Tick), 
+            //        null, new TimeSpan(0, 0, 0), new TimeSpan(0, 1, 0));
+            TimerOfImportingData_Tick(null);
             //
             RecordingInLogFile("Starting Service");
             RecordingInLogFile("");
