@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using PharmaceuticalInformation.BaseTypes;
 using Test_pharm_server;
 using System.Linq;
+using EntityFramework.Extensions;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -488,239 +489,147 @@ namespace PharmaceuticalInformation.Server
 
         #region ' Importing Data In Tables Of Service  ' 
 
-        // Updating Information Of Settings
+        // Updating Information Of Settings(Version Client)
         private void UpdatingInformationOfSettings(DataTable TableForUpdating, int IDOfDrugstore)
         {
-            //
-            // Name Of Procedure
-            //
-
-            foreach (DataRow row in TableForUpdating.Rows)
-                PhrmInf.UpdatingInformationOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
-
-            PhrmInf.SaveChanges();
-
-            //string TextOfCommandOfUpdating = "UpdatingInformationOfSettings";
-            ////
-            //// Creating Parameters Of Updating
-            ////
-            //DbParameter[] ParametersOfUpdatingCommand = new DbParameter[3] {
-            //    new SqlParameter("@IDOfDrugstore", SqlDbType.Int                 ),
-            //    new SqlParameter("@Key",           SqlDbType.VarChar,  0, "Key"  ), 
-            //    new SqlParameter("@Value",         SqlDbType.VarChar,  0, "Value")};
-            ////
-            //ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            ////
-            //// Updating
-            ////
-            //UpdatingTableOfService(
-            //    TableForUpdating, TextOfCommandOfUpdating, "InformationOfSettings", ParametersOfUpdatingCommand);
-            ////
+            if (IDOfDrugstore > 0)
+            {
+                ////
+                //// Update registration data of drugstore
+                ////         
+                foreach (DataRow row in TableForUpdating.Rows)
+                {
+                    try
+                    {
+                        PhrmInf.UpdatingInformationOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
+                    }
+                    catch
+                    {
+                        this.RecordingInLogFile(String.Format("Ошибка при обновлении регистрационных данных аптеки {0}", IDOfDrugstore));
+                    }
+                }
+                PhrmInf.SaveChanges();
+            }            
         }
 
         // Updating List Of Settings
         private void UpdatingListOfSettings(DataTable TableForUpdating, int IDOfDrugstore)
         {
-            foreach (DataRow row in TableForUpdating.Rows)
-                PhrmInf.UpdatingListOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
-
-            PhrmInf.SaveChanges();
-            ////
-            //// Name Of Procedure
-            ////
-            //string TextOfCommandOfUpdating = "UpdatingListOfSettings";
-            ////
-            //// Creating Parameters Of Updating
-            ////
-            //DbParameter[] ParametersOfUpdatingCommand = new DbParameter[3] {
-            //    new SqlParameter("@IDOfDrugstore", SqlDbType.Int             ),
-            //    new SqlParameter("@Key",           SqlDbType.VarChar,  0, "Key"), 
-            //    new SqlParameter("@Value",         SqlDbType.VarChar,  0, "Value")};
-            ////
-            //ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            ////
-            //// Updating
-            ////
-            //UpdatingTableOfService(
-            //    TableForUpdating, TextOfCommandOfUpdating, "ListOfSettings", ParametersOfUpdatingCommand);
-            ////
+            if (IDOfDrugstore > 0)
+            {
+                ////
+                //// Update registration data of drugstore
+                ////         
+                foreach (DataRow row in TableForUpdating.Rows)
+                {
+                    try
+                    {
+                        PhrmInf.UpdatingListOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
+                    }
+                    catch
+                    {
+                        this.RecordingInLogFile(String.Format("Ошибка при обновлении данных настройки аптеки {0}", IDOfDrugstore));
+                    }
+                }
+                PhrmInf.SaveChanges();
+            }
         }
 
         // Updating Registration Of Drugstores
         private void UpdatingRegistrationOfDrugstores(DataTable TableForUpdating, int IDOfDrugstore)
         {
-            //
-            // Clearing Registrated Drugstores
-            //
             if (IDOfDrugstore > 0)
-            {             
+            {
                 ////
-                //// Creating Clearing Command
-                ////
-                //SqlCommand ClearingRegistration =
-                //    new SqlCommand(
-                //        String.Format(
-                //        "DELETE FROM RegistrationOfDrugstores WHERE ID_PH = {0}", IDOfDrugstore), ConnectionToBase);
-                ////
-                //// Executing Clearing
-                ////
-                try
+                //// Update registration data of drugstore
+                ////         
+                foreach (DataRow row in TableForUpdating.Rows)
                 {
-                    ////
-                    //OpeningConnection(ClearingRegistration.Connection);
-                    ////
-                    //// Executing
-                    ////
                     try
                     {
-                        ////
-                        //// Executing Clearing
-                        //// 
-                        PhrmInf.RegistrationOfDrugstores.RemoveRange(PhrmInf.RegistrationOfDrugstores.Where(ds => ds.ID_PH == IDOfDrugstore));
-                        PhrmInf.SaveChanges();
-                        //ClearingRegistration.ExecuteScalar();
+                        PhrmInf.UpdatingRegistrationOfDrugstores(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["PathToFolderOfPriceLists"].ToString(),
+                            row["MaskOfFullPriceList"].ToString(), row["MaskOfIncomingPriceList"].ToString(), row["MaskOfSoldPriceList"].ToString(),
+                            Convert.ToBoolean(row["UseOfIDOfPriceList"]), Convert.ToBoolean(row["NotDeletingPriceList"]));
                     }
-                    catch (Exception E)
+                    catch
                     {
-                        this.RecordingInLogFile(
-                            String.Format("ERROR Ошибка при очистке регистраций аптеки: {0}", E.Message));
+                        this.RecordingInLogFile(String.Format("Ошибка при обновлении регистрационных данных аптеки {0}", IDOfDrugstore));
                     }
-                    //
-                    //ClosingConnection(ClearingRegistration.Connection);
                 }
-                catch (Exception E)
-                {
-                    this.RecordingInLogFile(
-                      String.Format("ERROR Ошибка при Открытии/Закрытии подключения очистки регистраций: {0}", E.Message));
-                }
-                //
-                //ClosingConnection(ClearingRegistration.Connection);
+                PhrmInf.SaveChanges();
             }
-
-            foreach (DataRow row in TableForUpdating.Rows)
-                PhrmInf.UpdatingRegistrationOfDrugstores(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["PathToFolderOfPriceLists"].ToString(), 
-                    row["MaskOfFullPriceList"].ToString(), row["MaskOfIncomingPriceList"].ToString(), row["MaskOfSoldPriceList"].ToString(),
-                    Convert.ToBoolean(row["UseOfIDOfPriceList"]), Convert.ToBoolean(row["NotDeletingPriceList"]));
-
-            PhrmInf.SaveChanges();
-            ////
-            //// Name Of Procedure
-            ////
-            //string TextOfCommandOfUpdating = "UpdatingRegistrationOfDrugstores";
-            ////
-            //// Creating Parameters Of Updating
-            ////
-            //DbParameter[] ParametersOfUpdatingCommand = new DbParameter[8] {
-            //    new SqlParameter("@IDOfDrugstore",            SqlDbType.Int             ),
-            //    new SqlParameter("@ID",                       SqlDbType.Int,     0, "ID"), 
-            //    new SqlParameter("@PathToFolderOfPriceLists", SqlDbType.VarChar, 0, "PathToFolderOfPriceLists"), 
-            //    new SqlParameter("@MaskOfFullPriceList",      SqlDbType.VarChar, 0, "MaskOfFullPriceList"     ), 
-            //    new SqlParameter("@MaskOfIncomingPriceList",  SqlDbType.VarChar, 0, "MaskOfIncomingPriceList" ), 
-            //    new SqlParameter("@MaskOfSoldPriceList",      SqlDbType.VarChar, 0, "MaskOfSoldPriceList"     ), 
-            //    new SqlParameter("@UseOfIDOfPriceList",       SqlDbType.Bit,     0, "UseOfIDOfPriceList"      ), 
-            //    new SqlParameter("@NotDeletingPriceList",     SqlDbType.Bit,     0, "NotDeletingPriceList"    )};
-            ////
-            //ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            ////
-            //// Updating
-            ////
-            //UpdatingTableOfService(
-            //    TableForUpdating, TextOfCommandOfUpdating, "RegistrationOfDrugstores", ParametersOfUpdatingCommand);
-            ////
         }
 
         // Updating Dates Of Transfer
         private void UpdatingDatesOfTransfer(DataTable TableForUpdating, int IDOfDrugstore)
         {
-            //
-            // Converting Type Of Column Of ID
-            //
-            bool Successful = true;
-            TableForUpdating.Columns.Add("ID_02", typeof(int));
-            try
+            if (IDOfDrugstore > 0)
             {
-                foreach (DataRow CurrentDate in TableForUpdating.Rows)
-                    CurrentDate["ID_02"] = Convert.ToInt32(CurrentDate["ID"]);
-            }
-            catch { Successful = false; this.RecordingInLogFile("Ошибка при конвертировании ID дат"); }
-            //
-            TableForUpdating.PrimaryKey = new DataColumn[1] { TableForUpdating.Columns["ID_02"] };
-            TableForUpdating.Columns.Remove("ID");
-            TableForUpdating.Columns["ID_02"].ColumnName = "ID";
-            //
-            if (Successful)
-            {
-                //
-                // Name Of Procedure
-                //
-                string TextOfCommandOfUpdating = "UpdatingDatesOfTransfer";
-                //
-                // Creating Parameters Of Updating
-                //
-                DbParameter[] ParametersOfUpdatingCommand = new DbParameter[5] {
-                    new SqlParameter("@IDOfDrugstore", SqlDbType.Int                 ),
-                    new SqlParameter("@ID",            SqlDbType.Int,      0, "ID"   ), 
-                    new SqlParameter("@Name",          SqlDbType.VarChar,  0, "Name" ), 
-                    new SqlParameter("@Value",         SqlDbType.Int,      0, "Value"), 
-                    new SqlParameter("@Date",          SqlDbType.DateTime, 0, "Date" )};
-                //
-                ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-                //
-                // Updating
-                //
-                UpdatingTableOfService(
-                    TableForUpdating, TextOfCommandOfUpdating, "DatesOfTransfer", ParametersOfUpdatingCommand);
-                //
+                ////
+                //// Update registration data of drugstore
+                ////         
+                foreach (DataRow row in TableForUpdating.Rows)
+                {
+                    try
+                    {
+                        PhrmInf.UpdatingDatesOfTransfer(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["Name"].ToString(), Convert.ToInt32(row["Value"]), Convert.ToDateTime(row["Date"]));
+
+                    }
+                    catch
+                    {
+                        this.RecordingInLogFile(String.Format("Ошибка при обновлении информации об обновлениях справочных данных аптеки {0}", IDOfDrugstore));
+                    }
+                }
+                PhrmInf.SaveChanges();
             }
         }
 
         // Updating Log Of Drugstore
         private void UpdatingLogOfDrugstore(DataTable TableForUpdating, int IDOfDrugstore)
         {
-            //
-            // Name Of Procedure
-            //
-            string TextOfCommandOfUpdating ="UpdatingLogsOfDrugstores";
-            //
-            // Creating Parameters Of Updating
-            //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[2] {
-                new SqlParameter("@IDOfDrugstore", SqlDbType.Int                 ),
-                new SqlParameter("@SystemLog",     SqlDbType.VarChar,  0, "Value")};
-            //
-            ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            //
-            // Updating
-            //
-            UpdatingTableOfService(
-                TableForUpdating, TextOfCommandOfUpdating, "LogsOfDrugstores", ParametersOfUpdatingCommand);
-            //
+            if (IDOfDrugstore > 0)
+            {
+                ////
+                //// Update registration data of drugstore
+                ////         
+                foreach (DataRow row in TableForUpdating.Rows)
+                {
+                    try
+                    {
+                        PhrmInf.UpdatingLogsOfDrugstores(IDOfDrugstore, row["Value"].ToString());
+
+                    }
+                    catch
+                    {
+                        this.RecordingInLogFile(String.Format("Ошибка при обновлении данных лога аптеки {0}", IDOfDrugstore));
+                    }
+                }
+                PhrmInf.SaveChanges();
+            }
         }
 
         // Updating Announcements Of Drugstore
         private void UpdatingAnnouncementsOfDrugstore(DataTable TableForUpdating, int IDOfDrugstore)
         {
-            //
-            // Name Of Procedure
-            //
-            string TextOfCommandOfUpdating = "UpdatingAnnouncementsOfDrugstore";
-            //
-            // Creating Parameters Of Updating
-            //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[5] {
-                new SqlParameter("@IDOfDrugstore", SqlDbType.Int                    ),
-                new SqlParameter("@ID",            SqlDbType.Int,     0, "ID"       ), 
-                new SqlParameter("@Caption",       SqlDbType.VarChar, 0, "Caption"  ), 
-                new SqlParameter("@Text",          SqlDbType.VarChar, 0, "Text"     ), 
-                new SqlParameter("@Published",     SqlDbType.Bit,     0, "Published")};
-            //
-            ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            //
-            // Updating
-            //
-            UpdatingTableOfService(
-                TableForUpdating, TextOfCommandOfUpdating, "Announcements", ParametersOfUpdatingCommand);
-            //
+            if (IDOfDrugstore > 0)
+            {
+                ////
+                //// Update registration data of drugstore
+                ////         
+                foreach (DataRow row in TableForUpdating.Rows)
+                {
+                    try
+                    {
+                        PhrmInf.UpdatingAnnouncementsOfDrugstore(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["Caption"].ToString(), row["Text"].ToString(), Convert.ToBoolean(row["Published"]));
+
+                    }
+                    catch
+                    {
+                        this.RecordingInLogFile(String.Format("Ошибка при обновлении таблицы объявлений, полученных аптекой {0}", IDOfDrugstore));
+                    }
+                }
+                PhrmInf.SaveChanges();
+            }            
         }
 
         // Updating Table Of Service
@@ -1335,36 +1244,17 @@ namespace PharmaceuticalInformation.Server
         // Drugstore Is Active
         public bool DrugstoreIsActive(int IDOfDrugstore)
         {
-            //
             bool ResultOfActivation = false;
-            //
-            // !!!
-            //
-            SqlCommand ExistingDrugstore = 
-                new SqlCommand(
-                    String.Format("SELECT COUNT(*) FROM Pharmacy WHERE ((Is_Deleted = 0) AND (Id_Pharmacy = {0}));", 
-                    IDOfDrugstore), 
-                    ConnectionToBase);
-            //
-            // !!!
-            //
+
             try
             {
-                //
-                OpeningConnection(ConnectionToBase);
-                //
-                int CountOfDrugstore = (int)ExistingDrugstore.ExecuteScalar();
+                int CountOfDrugstore = PhrmInf.Pharmacies.Where(p => !p.Is_deleted && p.Id_Pharmacy == IDOfDrugstore).Count();
                 //
                 ResultOfActivation = (CountOfDrugstore > 0) ? true : false;
-                //
-                ClosingConnection(ConnectionToBase);
             }
             catch (Exception E)
             {
-                //
                 RecordingInLogFile(String.Format("ERROR Ошибка при проверке активации аптеки: {0}", E.Message));
-                //
-                ClosingConnection(ConnectionToBase);
             }
             //
             // NO 103
