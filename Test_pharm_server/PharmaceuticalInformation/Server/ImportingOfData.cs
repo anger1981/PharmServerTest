@@ -5,6 +5,8 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using PharmaceuticalInformation.BaseTypes;
+using Test_pharm_server;
+using System.Linq;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -16,6 +18,7 @@ namespace PharmaceuticalInformation.Server
         //
         private SqlConnection ConnectionToBase;
         private SqlDataAdapter _UpdatingOfData;
+        private PhrmInfTESTEntities PhrmInf;
         //
         private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfData;
 
@@ -38,6 +41,8 @@ namespace PharmaceuticalInformation.Server
             //
             //this.StringOfConnection = StringOfConnection;
             //
+            PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
+
             _UpdatingOfData = new SqlDataAdapter();
             _UpdatingOfData.ContinueUpdateOnError = true;
             //
@@ -489,46 +494,56 @@ namespace PharmaceuticalInformation.Server
             //
             // Name Of Procedure
             //
-            string TextOfCommandOfUpdating = "UpdatingInformationOfSettings";
-            //
-            // Creating Parameters Of Updating
-            //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[3] {
-                new SqlParameter("@IDOfDrugstore", SqlDbType.Int                 ),
-                new SqlParameter("@Key",           SqlDbType.VarChar,  0, "Key"  ), 
-                new SqlParameter("@Value",         SqlDbType.VarChar,  0, "Value")};
-            //
-            ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            //
-            // Updating
-            //
-            UpdatingTableOfService(
-                TableForUpdating, TextOfCommandOfUpdating, "InformationOfSettings", ParametersOfUpdatingCommand);
-            //
+
+            foreach (DataRow row in TableForUpdating.Rows)
+                PhrmInf.UpdatingInformationOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
+
+            PhrmInf.SaveChanges();
+
+            //string TextOfCommandOfUpdating = "UpdatingInformationOfSettings";
+            ////
+            //// Creating Parameters Of Updating
+            ////
+            //DbParameter[] ParametersOfUpdatingCommand = new DbParameter[3] {
+            //    new SqlParameter("@IDOfDrugstore", SqlDbType.Int                 ),
+            //    new SqlParameter("@Key",           SqlDbType.VarChar,  0, "Key"  ), 
+            //    new SqlParameter("@Value",         SqlDbType.VarChar,  0, "Value")};
+            ////
+            //ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
+            ////
+            //// Updating
+            ////
+            //UpdatingTableOfService(
+            //    TableForUpdating, TextOfCommandOfUpdating, "InformationOfSettings", ParametersOfUpdatingCommand);
+            ////
         }
 
         // Updating List Of Settings
         private void UpdatingListOfSettings(DataTable TableForUpdating, int IDOfDrugstore)
         {
-            //
-            // Name Of Procedure
-            //
-            string TextOfCommandOfUpdating = "UpdatingListOfSettings";
-            //
-            // Creating Parameters Of Updating
-            //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[3] {
-                new SqlParameter("@IDOfDrugstore", SqlDbType.Int             ),
-                new SqlParameter("@Key",           SqlDbType.VarChar,  0, "Key"), 
-                new SqlParameter("@Value",         SqlDbType.VarChar,  0, "Value")};
-            //
-            ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            //
-            // Updating
-            //
-            UpdatingTableOfService(
-                TableForUpdating, TextOfCommandOfUpdating, "ListOfSettings", ParametersOfUpdatingCommand);
-            //
+            foreach (DataRow row in TableForUpdating.Rows)
+                PhrmInf.UpdatingListOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
+
+            PhrmInf.SaveChanges();
+            ////
+            //// Name Of Procedure
+            ////
+            //string TextOfCommandOfUpdating = "UpdatingListOfSettings";
+            ////
+            //// Creating Parameters Of Updating
+            ////
+            //DbParameter[] ParametersOfUpdatingCommand = new DbParameter[3] {
+            //    new SqlParameter("@IDOfDrugstore", SqlDbType.Int             ),
+            //    new SqlParameter("@Key",           SqlDbType.VarChar,  0, "Key"), 
+            //    new SqlParameter("@Value",         SqlDbType.VarChar,  0, "Value")};
+            ////
+            //ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
+            ////
+            //// Updating
+            ////
+            //UpdatingTableOfService(
+            //    TableForUpdating, TextOfCommandOfUpdating, "ListOfSettings", ParametersOfUpdatingCommand);
+            ////
         }
 
         // Updating Registration Of Drugstores
@@ -538,32 +553,40 @@ namespace PharmaceuticalInformation.Server
             // Clearing Registrated Drugstores
             //
             if (IDOfDrugstore > 0)
-            {
-                //
-                // Creating Clearing Command
-                //
-                SqlCommand ClearingRegistration =
-                    new SqlCommand(
-                        String.Format(
-                        "DELETE FROM RegistrationOfDrugstores WHERE ID_PH = {0}", IDOfDrugstore), ConnectionToBase);
-                //
-                // Executing Clearing
-                //
+            {             
+                ////
+                //// Creating Clearing Command
+                ////
+                //SqlCommand ClearingRegistration =
+                //    new SqlCommand(
+                //        String.Format(
+                //        "DELETE FROM RegistrationOfDrugstores WHERE ID_PH = {0}", IDOfDrugstore), ConnectionToBase);
+                ////
+                //// Executing Clearing
+                ////
                 try
                 {
-                    //
-                    OpeningConnection(ClearingRegistration.Connection);
-                    //
-                    // Executing
-                    //
-                    try { ClearingRegistration.ExecuteScalar(); }
+                    ////
+                    //OpeningConnection(ClearingRegistration.Connection);
+                    ////
+                    //// Executing
+                    ////
+                    try
+                    {
+                        ////
+                        //// Executing Clearing
+                        //// 
+                        PhrmInf.RegistrationOfDrugstores.RemoveRange(PhrmInf.RegistrationOfDrugstores.Where(ds => ds.ID_PH == IDOfDrugstore));
+                        PhrmInf.SaveChanges();
+                        //ClearingRegistration.ExecuteScalar();
+                    }
                     catch (Exception E)
                     {
                         this.RecordingInLogFile(
                             String.Format("ERROR Ошибка при очистке регистраций аптеки: {0}", E.Message));
                     }
                     //
-                    ClosingConnection(ClearingRegistration.Connection);
+                    //ClosingConnection(ClearingRegistration.Connection);
                 }
                 catch (Exception E)
                 {
@@ -573,30 +596,37 @@ namespace PharmaceuticalInformation.Server
                 //
                 //ClosingConnection(ClearingRegistration.Connection);
             }
-            //
-            // Name Of Procedure
-            //
-            string TextOfCommandOfUpdating = "UpdatingRegistrationOfDrugstores";
-            //
-            // Creating Parameters Of Updating
-            //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[8] {
-                new SqlParameter("@IDOfDrugstore",            SqlDbType.Int             ),
-                new SqlParameter("@ID",                       SqlDbType.Int,     0, "ID"), 
-                new SqlParameter("@PathToFolderOfPriceLists", SqlDbType.VarChar, 0, "PathToFolderOfPriceLists"), 
-                new SqlParameter("@MaskOfFullPriceList",      SqlDbType.VarChar, 0, "MaskOfFullPriceList"     ), 
-                new SqlParameter("@MaskOfIncomingPriceList",  SqlDbType.VarChar, 0, "MaskOfIncomingPriceList" ), 
-                new SqlParameter("@MaskOfSoldPriceList",      SqlDbType.VarChar, 0, "MaskOfSoldPriceList"     ), 
-                new SqlParameter("@UseOfIDOfPriceList",       SqlDbType.Bit,     0, "UseOfIDOfPriceList"      ), 
-                new SqlParameter("@NotDeletingPriceList",     SqlDbType.Bit,     0, "NotDeletingPriceList"    )};
-            //
-            ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
-            //
-            // Updating
-            //
-            UpdatingTableOfService(
-                TableForUpdating, TextOfCommandOfUpdating, "RegistrationOfDrugstores", ParametersOfUpdatingCommand);
-            //
+
+            foreach (DataRow row in TableForUpdating.Rows)
+                PhrmInf.UpdatingRegistrationOfDrugstores(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["PathToFolderOfPriceLists"].ToString(), 
+                    row["MaskOfFullPriceList"].ToString(), row["MaskOfIncomingPriceList"].ToString(), row["MaskOfSoldPriceList"].ToString(),
+                    Convert.ToBoolean(row["UseOfIDOfPriceList"]), Convert.ToBoolean(row["NotDeletingPriceList"]));
+
+            PhrmInf.SaveChanges();
+            ////
+            //// Name Of Procedure
+            ////
+            //string TextOfCommandOfUpdating = "UpdatingRegistrationOfDrugstores";
+            ////
+            //// Creating Parameters Of Updating
+            ////
+            //DbParameter[] ParametersOfUpdatingCommand = new DbParameter[8] {
+            //    new SqlParameter("@IDOfDrugstore",            SqlDbType.Int             ),
+            //    new SqlParameter("@ID",                       SqlDbType.Int,     0, "ID"), 
+            //    new SqlParameter("@PathToFolderOfPriceLists", SqlDbType.VarChar, 0, "PathToFolderOfPriceLists"), 
+            //    new SqlParameter("@MaskOfFullPriceList",      SqlDbType.VarChar, 0, "MaskOfFullPriceList"     ), 
+            //    new SqlParameter("@MaskOfIncomingPriceList",  SqlDbType.VarChar, 0, "MaskOfIncomingPriceList" ), 
+            //    new SqlParameter("@MaskOfSoldPriceList",      SqlDbType.VarChar, 0, "MaskOfSoldPriceList"     ), 
+            //    new SqlParameter("@UseOfIDOfPriceList",       SqlDbType.Bit,     0, "UseOfIDOfPriceList"      ), 
+            //    new SqlParameter("@NotDeletingPriceList",     SqlDbType.Bit,     0, "NotDeletingPriceList"    )};
+            ////
+            //ParametersOfUpdatingCommand[0].Value = IDOfDrugstore;
+            ////
+            //// Updating
+            ////
+            //UpdatingTableOfService(
+            //    TableForUpdating, TextOfCommandOfUpdating, "RegistrationOfDrugstores", ParametersOfUpdatingCommand);
+            ////
         }
 
         // Updating Dates Of Transfer
@@ -1575,42 +1605,23 @@ namespace PharmaceuticalInformation.Server
             int IDOfDrugstore, bool ContainsPriceList, bool ContainsAnnouncements, DateTime LocalDateOfSending)
         {
             //
-            // Generation Of Text Of Recording
+            // Generation New HistoryOfReception
             //
-            string TextOfCommandOfRecording =
-                "INSERT INTO HistoryOfReceptions " +
-                "(ID_PH, ContainsPriceList, ContainsAnnouncements, " +
-                "DateOfReception, LocalDateOfSending) " +
-                "VALUES (@ID_PH, @ContainsPriceList, @ContainsAnnouncements, " +
-                "GetDate(), @LocalDateOfSending); " +
-                "SET @ID = (SELECT MAX(ID) FROM HistoryOfReceptions);";
-            //
-            // Creating Command Of Recording
-            //
-            DbParameter[] ParametersOfRecordingCommand = new DbParameter[5] {
-                            new SqlParameter("@ID",                     SqlDbType.Int), 
-                            new SqlParameter("@ID_PH",                  SqlDbType.Int), 
-                            new SqlParameter("@ContainsPriceList",      SqlDbType.Bit), 
-                            new SqlParameter("@ContainsAnnouncements",  SqlDbType.Bit), 
-                            new SqlParameter("@LocalDateOfSending",     SqlDbType.DateTime)};
-            //
-            SqlCommand CommandOfRecording = (SqlCommand)
-                CreatingCommand(TextOfCommandOfRecording, ParametersOfRecordingCommand);
-            //
-            CommandOfRecording.Parameters["@ID"].Direction = ParameterDirection.Output;
-            //
-            CommandOfRecording.Parameters["@ID_PH"].Value = IDOfDrugstore;
-            CommandOfRecording.Parameters["@ContainsPriceList"].Value = ContainsPriceList;
-            CommandOfRecording.Parameters["@ContainsAnnouncements"].Value = ContainsAnnouncements;
-            CommandOfRecording.Parameters["@LocalDateOfSending"].Value = LocalDateOfSending;
+            HistoryOfReception hr = new HistoryOfReception
+            {
+                ID_PH = IDOfDrugstore,
+                ContainsPriceList = ContainsPriceList,
+                ContainsAnnouncements = ContainsAnnouncements,
+                DateOfReception = DateTime.Now,
+                LocalDateOfSending = LocalDateOfSending
+            };            
             //
             // Executing
             //
             try
             {
-                CommandOfRecording.Connection.Open();
-                CommandOfRecording.ExecuteNonQuery();
-                CommandOfRecording.Connection.Close();
+                PhrmInf.HistoryOfReceptions.Add(hr);
+                PhrmInf.SaveChanges();
             }
             catch (Exception E)
             {
@@ -1622,7 +1633,10 @@ namespace PharmaceuticalInformation.Server
             // Getting ID Of Reception Of Data
             //
             int IDOfReception = 0;
-            try { IDOfReception = (int)CommandOfRecording.Parameters["@ID"].Value; }
+            try
+            {
+                IDOfReception = PhrmInf.HistoryOfReceptions.Max(i => i.ID);
+            }
             catch { this.RecordingInLogFile("Ошибка при получении IDOfReception"); }
             //
             // Return
