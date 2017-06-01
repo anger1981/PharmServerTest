@@ -91,6 +91,26 @@ namespace PharmaceuticalInformation.Server
             // Getting Tables Of Private Importers
             //
             DataSet TablesOfPrivateImporters = new DataSet("TablesOfPrivateImporters");
+
+            DataTable DT_PrivImp = new DataTable();
+            DT_PrivImp.Columns.Add("ID", typeof(string));
+            DT_PrivImp.Columns.Add("NameOfImporter", typeof(string));
+            DT_PrivImp.Columns.Add("Active", typeof(bool));
+            DT_PrivImp.Columns.Add("PathOfImporting", typeof(string));
+            DT_PrivImp.Columns.Add("UseOfSystemLogin", typeof(bool));
+            DT_PrivImp.Columns.Add("MaskOfFileOfImporting", typeof(string));
+            DT_PrivImp.Columns.Add("UseOfRecoding", typeof(bool));
+
+            TablesOfPrivateImporters.Tables.Add(DT_PrivImp);
+
+            DataTable DT_RecID = new DataTable();
+            DT_RecID.Columns.Add("ID", typeof(string));
+            DT_RecID.Columns.Add("NameOfDrugstoreOfImporter", typeof(string));
+            DT_RecID.Columns.Add("IDOfPrivateImportings", typeof(string));
+            DT_RecID.Columns.Add("IDOfImporter", typeof(int));
+            DT_RecID.Columns.Add("IDOfSystem", typeof(int));
+
+            TablesOfPrivateImporters.Tables.Add(DT_RecID);
             //
             string TextOfInquiryOfPrivateImportings = 
                 "SELECT ID, NameOfImporter, Active, PathOfImporting, UseOfSystemLogin, MaskOfFileOfImporting, UseOfRecoding FROM PrivateImportings; " +
@@ -98,11 +118,41 @@ namespace PharmaceuticalInformation.Server
             SqlCommand CommandOfSelectionOfPrivateImportings = 
                 new SqlCommand(TextOfInquiryOfPrivateImportings, ConnectionToBase);
             SqlDataAdapter GettingPrivateImportings = new SqlDataAdapter(CommandOfSelectionOfPrivateImportings);
+
+            var PrivImps = PhrmInf.PrivateImportings.AsEnumerable();
+            var RecIDs = PhrmInf.RecodingIDsOfDrugstoresOfImportings.AsEnumerable();
             //
             try
             {
-                GettingPrivateImportings.FillSchema(TablesOfPrivateImporters, SchemaType.Source);
-                GettingPrivateImportings.Fill(TablesOfPrivateImporters);
+                foreach(PrivateImporting pi in PrivImps)
+                {
+                    DataRow row = TablesOfPrivateImporters.Tables[0].NewRow();
+
+                    row["ID"] = pi.ID;
+                    row["NameOfImporter"] = pi.NameOfImporter;
+                    row["Active"] = pi.Active;
+                    row["PathOfImporting"] = pi.PathOfImporting;
+                    row["UseOfSystemLogin"] = pi.UseOfSystemLogin;
+                    row["MaskOfFileOfImporting"] = pi.MaskOfFileOfImporting;
+                    row["UseOfRecoding"] = pi.UseOfRecoding;
+
+                    TablesOfPrivateImporters.Tables[0].Rows.Add(row);
+                }
+
+                foreach (RecodingIDsOfDrugstoresOfImporting rid in RecIDs)
+                {
+                    DataRow row = TablesOfPrivateImporters.Tables[1].NewRow();
+
+                    row["ID"] = rid.ID;
+                    row["NameOfDrugstoreOfImporter"] = rid.NameOfDrugstoreOfImporter;
+                    row["IDOfPrivateImportings"] = rid.IDOfPrivateImportings;
+                    row["IDOfImporter"] = rid.IDOfImporter;
+                    row["IDOfSystem"] = rid.IDOfSystem;
+
+                    TablesOfPrivateImporters.Tables[1].Rows.Add(row);
+                }
+                //GettingPrivateImportings.FillSchema(TablesOfPrivateImporters, SchemaType.Source);
+                //GettingPrivateImportings.Fill(TablesOfPrivateImporters);
             }
             catch (Exception E)
             {
