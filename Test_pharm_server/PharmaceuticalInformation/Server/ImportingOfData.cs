@@ -111,17 +111,10 @@ namespace PharmaceuticalInformation.Server
             DT_RecID.Columns.Add("IDOfSystem", typeof(int));
 
             TablesOfPrivateImporters.Tables.Add(DT_RecID);
-            //
-            string TextOfInquiryOfPrivateImportings = 
-                "SELECT ID, NameOfImporter, Active, PathOfImporting, UseOfSystemLogin, MaskOfFileOfImporting, UseOfRecoding FROM PrivateImportings; " +
-                "SELECT ID, IDOfPrivateImportings, IDOfImporter, IDOfSystem FROM RecodingIDsOfDrugstoresOfImportings;";
-            SqlCommand CommandOfSelectionOfPrivateImportings = 
-                new SqlCommand(TextOfInquiryOfPrivateImportings, ConnectionToBase);
-            SqlDataAdapter GettingPrivateImportings = new SqlDataAdapter(CommandOfSelectionOfPrivateImportings);
-
+            
             var PrivImps = PhrmInf.PrivateImportings.AsEnumerable();
             var RecIDs = PhrmInf.RecodingIDsOfDrugstoresOfImportings.AsEnumerable();
-            //
+
             try
             {
                 foreach(PrivateImporting pi in PrivImps)
@@ -151,16 +144,12 @@ namespace PharmaceuticalInformation.Server
 
                     TablesOfPrivateImporters.Tables[1].Rows.Add(row);
                 }
-                //GettingPrivateImportings.FillSchema(TablesOfPrivateImporters, SchemaType.Source);
-                //GettingPrivateImportings.Fill(TablesOfPrivateImporters);
+
             }
             catch (Exception E)
             {
                 //
                 RecordingInLogFile(String.Format("ERROR Error Of Getting List Private Importers: {0}", E.Message));
-                //
-                if (ConnectionToBase.State == ConnectionState.Open)
-                    ConnectionToBase.Close();
                 //
                 if (TablesOfPrivateImporters == null)
                     TablesOfPrivateImporters = new DataSet("TablesOfPrivateImporters");
@@ -872,16 +861,29 @@ namespace PharmaceuticalInformation.Server
                 //
                 // Creating List Of ID_PR For Updating Deleting
                 //
-                SqlCommand CommandOfSelection = new SqlCommand(
-                    String.Format(
-                    "SELECT ID_Product FROM Price_List WHERE ((Id_Pharmacy = {0}) AND (Is_Deleted = 0));",
-                    IDOfDrugstore),
-                    ConnectionToBase);
+                //SqlCommand CommandOfSelection = new SqlCommand(
+                //    String.Format(
+                //    "SELECT ID_Product FROM Price_List WHERE ((Id_Pharmacy = {0}) AND (Is_Deleted = 0));",
+                //    IDOfDrugstore),
+                //    ConnectionToBase);
                 //
-                SqlDataAdapter GettingIDsOfProducts = new SqlDataAdapter(CommandOfSelection);
+                //SqlDataAdapter GettingIDsOfProducts = new SqlDataAdapter(CommandOfSelection);
+
                 DataTable IDsOfProducts = new DataTable();
-                GettingIDsOfProducts.FillSchema(IDsOfProducts, SchemaType.Source);
-                GettingIDsOfProducts.Fill(IDsOfProducts);
+                IDsOfProducts.Columns.Add("ID_Product", typeof(Int32));
+
+                var Price_list_BD = PhrmInf.price_list.Where(p => p.Id_Pharmacy == IDOfDrugstore && !p.Is_deleted);
+
+                foreach (price_list pl in Price_list_BD)
+                {
+                    DataRow row = IDsOfProducts.NewRow();
+
+                    row["Id_Product"] = pl.Id_Product;
+
+                    IDsOfProducts.Rows.Add(row);
+                }
+                //GettingIDsOfProducts.FillSchema(IDsOfProducts, SchemaType.Source);
+                //GettingIDsOfProducts.Fill(IDsOfProducts);
                 //
                 DataTable IDsForDeleting = new DataTable();
                 IDsForDeleting.Columns.Add("ID", typeof(int));
@@ -906,6 +908,11 @@ namespace PharmaceuticalInformation.Server
                 //
                 // Creating Command Of Updating Deleting
                 //
+                IEnumerable<int> IDsForDeleting_IE = (IEnumerable<int>) IDsForDeleting;
+
+                //PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted).Join(IDsForDeleting_IE, IDsForDeleting_IE. => )
+
+
                 SqlCommand UpdatingOfDeletingOfPricesOfDrugstore = 
                     new SqlCommand(
                         String.Format(
@@ -1045,32 +1052,30 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Command Of Recording
             //
-            SqlCommand CommandOfRecording =
-                new SqlCommand(
-                    String.Format(
-                    "INSERT INTO ReportsOfImportingOfPriceLists " +
-                    "(ID_PH, ID_HR, CountNotConfirmed, CountOfAdditions, CountOfUnAdditions, " +
-                    "CountOfChanges, CountOfUnchanges, CountOfDeletings, CountOfAllPrices) " +
-                    "VALUES ({0}, {1}, 0, 0, 0, 0, 0, 0, 0);",
-                    IDOfDrugstore, IDOfReception),
-                    ConnectionToBase);
-            //
-            // Executing
-            //
+
+            ReportsOfImportingOfPriceList ripl = new ReportsOfImportingOfPriceList
+            {
+                ID_PH = IDOfDrugstore,
+                ID_HR = IDOfReception,
+                CountNotConfirmed = 0,
+                CountOfAdditions = 0,
+                CountOfUnAdditions = 0,
+                CountOfChanges = 0,
+                CountOfUnChanges = 0,
+                CountOfDeletings = 0,
+                CountOfAllPrices = 0
+            };
+
             try
             {
-                CommandOfRecording.Connection.Open();
-                CommandOfRecording.ExecuteNonQuery();
-                CommandOfRecording.Connection.Close();
+                PhrmInf.ReportsOfImportingOfPriceLists.Add(ripl);
+                PhrmInf.SaveChanges();
             }
             catch (Exception E)
             {
                 //
                 this.RecordingInLogFile(
                     String.Format("Ошибка при записе в ReportsOfImportingOfPriceLists: {0}", E.Message));
-                //
-                ClosingConnection(CommandOfRecording.Connection);
-                //
                 Successful = false;
             }
             // Return
@@ -1083,38 +1088,16 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Command Of Recording
             //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[4] {
-                new SqlParameter("@IDOfDrugstore",    SqlDbType.Int), 
-                new SqlParameter("@IDOfReception",    SqlDbType.Int), 
-                new SqlParameter("@CountOfAllPrices", SqlDbType.Int), 
-                new SqlParameter("@FullPriceList",    SqlDbType.Bit)};
-            //
-            SqlCommand CommandOfUpdating = (SqlCommand)CreatingCommand(
-                "UPDATE ReportsOfImportingOfPriceLists " +
-                "SET CountOfAllPrices = @CountOfAllPrices, FullPriceList = @FullPriceList " +
-                "WHERE ((ID_PH = @IDOfDrugstore) AND (ID_HR = @IDOfReception));",
-                ParametersOfUpdatingCommand);
-            //
-            CommandOfUpdating.Parameters["@IDOfDrugstore"].Value = IDOfDrugstore;
-            CommandOfUpdating.Parameters["@IDOfReception"].Value = IDOfReception;
-            CommandOfUpdating.Parameters["@CountOfAllPrices"].Value = CountOfPrices;
-            CommandOfUpdating.Parameters["@FullPriceList"].Value = FullPriceList;
-            //
-            // Executing
-            //
             try
             {
-                CommandOfUpdating.Connection.Open();
-                CommandOfUpdating.ExecuteNonQuery();
-                CommandOfUpdating.Connection.Close();
+                PhrmInf.ReportsOfImportingOfPriceLists.Where(ripl => ripl.ID_PH == IDOfDrugstore && ripl.ID_HR == IDOfReception).
+                   Update(ripl_n => new ReportsOfImportingOfPriceList { CountOfAllPrices = CountOfPrices, FullPriceList = FullPriceList });
             }
             catch (Exception E)
             {
                 //
                 this.RecordingInLogFile(
                     String.Format("Ошибка при обновлении ReportsOfImportingOfPriceLists: {0}", E.Message));
-                //
-                ClosingConnection(CommandOfUpdating.Connection);
             }
         }
 
@@ -1124,36 +1107,16 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Command Of Recording
             //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[3] {
-                new SqlParameter("@IDOfDrugstore",   SqlDbType.Int), 
-                new SqlParameter("@IDOfReception",   SqlDbType.Int), 
-                new SqlParameter("@CountOfDeleting", SqlDbType.Int) };
-            //
-            SqlCommand CommandOfUpdating = (SqlCommand)CreatingCommand(
-                "UPDATE ReportsOfImportingOfPriceLists " +
-                "SET CountNotConfirmed = @CountOfDeleting " +
-                "WHERE ((ID_PH = @IDOfDrugstore) AND (ID_HR = @IDOfReception));",
-                ParametersOfUpdatingCommand);
-            //
-            CommandOfUpdating.Parameters["@IDOfDrugstore"].Value = IDOfDrugstore;
-            CommandOfUpdating.Parameters["@IDOfReception"].Value = IDOfReception;
-            CommandOfUpdating.Parameters["@CountOfDeleting"].Value = CountOfDeleting;
-            //
-            // Executing
-            //
             try
             {
-                CommandOfUpdating.Connection.Open();
-                CommandOfUpdating.ExecuteNonQuery();
-                CommandOfUpdating.Connection.Close();
+                PhrmInf.ReportsOfImportingOfPriceLists.Where(ripl => ripl.ID_PH == IDOfDrugstore && ripl.ID_HR == IDOfReception).
+                   Update(ripl_n => new ReportsOfImportingOfPriceList { CountNotConfirmed = CountOfDeleting });
             }
             catch (Exception E)
             {
                 //
                 this.RecordingInLogFile(
                     String.Format("Ошибка при обновлении ReportsOfImportingOfPriceLists: {0}", E.Message));
-                //
-                ClosingConnection(CommandOfUpdating.Connection);
             }
         }
 
@@ -1162,32 +1125,17 @@ namespace PharmaceuticalInformation.Server
         {
             //
             // Creating Command Of Updating
-            //
-            DbParameter[] ParametersOfUpdatingCommand = new DbParameter[1] { 
-                new SqlParameter("@IDOfDrugstore",   SqlDbType.Int) };
-            //
-            SqlCommand CommandOfUpdating = (SqlCommand)CreatingCommand(
-                "UPDATE price_list SET Actual = GetDate() " + 
-                "WHERE ((Id_Pharmacy = @IDOfDrugstore) AND (Is_Deleted = 0));", 
-                ParametersOfUpdatingCommand);
-            //
-            CommandOfUpdating.Parameters["@IDOfDrugstore"].Value = IDOfDrugstore;
-            //
-            // Executing
-            //
+            //            
             try
             {
-                CommandOfUpdating.Connection.Open();
-                CommandOfUpdating.ExecuteNonQuery();
-                CommandOfUpdating.Connection.Close();
+                PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted).
+                    Update(plu => new price_list { Actual = DateTime.Now });
             }
             catch (Exception E)
             {
                 //
                 this.RecordingInLogFile(
                     String.Format("Ошибка при обновлении price_list (Date Of Actuals): {0}", E.Message));
-                //
-                ClosingConnection(CommandOfUpdating.Connection);
             }
         }
 
