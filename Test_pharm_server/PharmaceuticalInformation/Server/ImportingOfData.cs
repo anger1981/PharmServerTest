@@ -8,6 +8,7 @@ using PharmaceuticalInformation.BaseTypes;
 using Test_pharm_server;
 using System.Linq;
 using EntityFramework.Extensions;
+using Test_pharm_server.PharmaceuticalInformation.DataTools;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -93,58 +94,15 @@ namespace PharmaceuticalInformation.Server
             DataSet TablesOfPrivateImporters = new DataSet("TablesOfPrivateImporters");
 
             DataTable DT_PrivImp = new DataTable();
-            DT_PrivImp.Columns.Add("ID", typeof(string));
-            DT_PrivImp.Columns.Add("NameOfImporter", typeof(string));
-            DT_PrivImp.Columns.Add("Active", typeof(bool));
-            DT_PrivImp.Columns.Add("PathOfImporting", typeof(string));
-            DT_PrivImp.Columns.Add("UseOfSystemLogin", typeof(bool));
-            DT_PrivImp.Columns.Add("MaskOfFileOfImporting", typeof(string));
-            DT_PrivImp.Columns.Add("UseOfRecoding", typeof(bool));
-
-            TablesOfPrivateImporters.Tables.Add(DT_PrivImp);
-
             DataTable DT_RecID = new DataTable();
-            DT_RecID.Columns.Add("ID", typeof(string));
-            DT_RecID.Columns.Add("NameOfDrugstoreOfImporter", typeof(string));
-            DT_RecID.Columns.Add("IDOfPrivateImportings", typeof(string));
-            DT_RecID.Columns.Add("IDOfImporter", typeof(int));
-            DT_RecID.Columns.Add("IDOfSystem", typeof(int));
-
-            TablesOfPrivateImporters.Tables.Add(DT_RecID);
-            
-            var PrivImps = PhrmInf.PrivateImportings.AsEnumerable();
-            var RecIDs = PhrmInf.RecodingIDsOfDrugstoresOfImportings.AsEnumerable();
 
             try
             {
-                foreach(PrivateImporting pi in PrivImps)
-                {
-                    DataRow row = TablesOfPrivateImporters.Tables[0].NewRow();
+                PhrmInf.PrivateImportings.AsEnumerable().Fill(ref DT_PrivImp);
+                PhrmInf.RecodingIDsOfDrugstoresOfImportings.AsEnumerable().Fill(ref DT_RecID);
 
-                    row["ID"] = pi.ID;
-                    row["NameOfImporter"] = pi.NameOfImporter;
-                    row["Active"] = pi.Active;
-                    row["PathOfImporting"] = pi.PathOfImporting;
-                    row["UseOfSystemLogin"] = pi.UseOfSystemLogin;
-                    row["MaskOfFileOfImporting"] = pi.MaskOfFileOfImporting;
-                    row["UseOfRecoding"] = pi.UseOfRecoding;
-
-                    TablesOfPrivateImporters.Tables[0].Rows.Add(row);
-                }
-
-                foreach (RecodingIDsOfDrugstoresOfImporting rid in RecIDs)
-                {
-                    DataRow row = TablesOfPrivateImporters.Tables[1].NewRow();
-
-                    row["ID"] = rid.ID;
-                    row["NameOfDrugstoreOfImporter"] = rid.NameOfDrugstoreOfImporter;
-                    row["IDOfPrivateImportings"] = rid.IDOfPrivateImportings;
-                    row["IDOfImporter"] = rid.IDOfImporter;
-                    row["IDOfSystem"] = rid.IDOfSystem;
-
-                    TablesOfPrivateImporters.Tables[1].Rows.Add(row);
-                }
-
+                TablesOfPrivateImporters.Tables.Add(DT_PrivImp);
+                TablesOfPrivateImporters.Tables.Add(DT_RecID);
             }
             catch (Exception E)
             {
@@ -851,7 +809,7 @@ namespace PharmaceuticalInformation.Server
         {
             //
             DataTable PricesOfDrugstore = PriceList.Copy();
-            //SqlConnection ConnectionToBase = new SqlConnection(StringOfConnection);
+
             int CountOfModification = 0;
             //
             // Refreshing Of Dates
@@ -859,32 +817,14 @@ namespace PharmaceuticalInformation.Server
             if ((AllPrices) && (PricesOfDrugstore.Rows.Count >= 1))// && PricesOfDrugstore.Rows.Count > 100) // !!! Отключение ограничения
             {
                 //
-                // Creating List Of ID_PR For Updating Deleting
+                // Creating List Of Id_Product For Updating Deleting. The actual prices of pharmacy products that are not listed in the incoming PriceList should be marked as deleted
                 //
-                //SqlCommand CommandOfSelection = new SqlCommand(
-                //    String.Format(
-                //    "SELECT ID_Product FROM Price_List WHERE ((Id_Pharmacy = {0}) AND (Is_Deleted = 0));",
-                //    IDOfDrugstore),
-                //    ConnectionToBase);
-                //
-                //SqlDataAdapter GettingIDsOfProducts = new SqlDataAdapter(CommandOfSelection);
 
+                // Take actual prices
                 DataTable IDsOfProducts = new DataTable();
-                IDsOfProducts.Columns.Add("ID_Product", typeof(Int32));
-
-                var Price_list_BD = PhrmInf.price_list.Where(p => p.Id_Pharmacy == IDOfDrugstore && !p.Is_deleted);
-
-                foreach (price_list pl in Price_list_BD)
-                {
-                    DataRow row = IDsOfProducts.NewRow();
-
-                    row["Id_Product"] = pl.Id_Product;
-
-                    IDsOfProducts.Rows.Add(row);
-                }
-                //GettingIDsOfProducts.FillSchema(IDsOfProducts, SchemaType.Source);
-                //GettingIDsOfProducts.Fill(IDsOfProducts);
-                //
+                PhrmInf.price_list.Where(p => p.Id_Pharmacy == IDOfDrugstore && !p.Is_deleted).Select(p => new { p.Id_Product }).Fill(ref IDsOfProducts);
+                
+                // Create table for product that should be marked deleted in pricelist
                 DataTable IDsForDeleting = new DataTable();
                 IDsForDeleting.Columns.Add("ID", typeof(int));
                 //
@@ -908,9 +848,10 @@ namespace PharmaceuticalInformation.Server
                 //
                 // Creating Command Of Updating Deleting
                 //
-                IEnumerable<int> IDsForDeleting_IE = (IEnumerable<int>) IDsForDeleting;
+                IEnumerable<object> IDsForDeleting_IE = IDsForDeleting.AsEnumerable();
+                //IDsForDeleting.Rows.
 
-                //PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted).Join(IDsForDeleting_IE, IDsForDeleting_IE. => )
+                //PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted).Join(IDsForDeleting_IE, IDsForDeleting_IE => )
 
 
                 SqlCommand UpdatingOfDeletingOfPricesOfDrugstore = 

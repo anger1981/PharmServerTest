@@ -43,11 +43,17 @@
       <HintPath>..\packages\EntityFramework.6.2.0-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
+      <Private>True</Private>
+      <Aliases>SLD</Aliases>
+    </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
@@ -122,6 +128,7 @@
     <Compile Include="Operator.cs">
       <DependentUpon>PhrmInfMod.tt</DependentUpon>
     </Compile>
+    <Compile Include="PharmaceuticalInformation\DataTools\DataTableEnumerate.cs" />
     <Compile Include="PharmaceuticalInformation\Drugstore\ConvertingOfPriceList.cs" />
     <Compile Include="PharmaceuticalInformation\Server\ExchangeBetweenSystemAndQueues.cs" />
     <Compile Include="PharmaceuticalInformation\Server\ExportingOfData.cs" />
