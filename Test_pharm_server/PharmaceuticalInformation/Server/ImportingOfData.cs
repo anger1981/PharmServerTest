@@ -848,39 +848,50 @@ namespace PharmaceuticalInformation.Server
                 //
                 // Creating Command Of Updating Deleting
                 //
-                IEnumerable<object> IDsForDeleting_IE = IDsForDeleting.AsEnumerable();
-                //IDsForDeleting.Rows.
+                IEnumerable<dynamic> IDsForDeleting_IE = IDsForDeleting.AsEnumerable();
+                IEnumerable<int> IDsForDeleting_IE_i = IDsForDeleting_IE.Select(p => (int) p.ID);
+                IEnumerable<HistoryOfChangesOfPrice> IDsForDeleting_IE_HP = IDsForDeleting_IE
+                    .Select(p => new HistoryOfChangesOfPrice { IDOfDrugstore = IDOfDrugstore, IDOfProduct = (int)p.ID
+                    , ModificationOfPrice = 3, ModifiedPrice = 0, DateOfChange = DateTime.Now });
 
-                //PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted).Join(IDsForDeleting_IE, IDsForDeleting_IE => )
 
+                dfgdfhgfhfghgfh;
 
-                SqlCommand UpdatingOfDeletingOfPricesOfDrugstore = 
-                    new SqlCommand(
-                        String.Format(
-                        "UPDATE Price_List " + 
-                        "SET Date_upd = GetDate(), Is_deleted = 1 " + 
-                        "WHERE (Id_Pharmacy = {0}) AND (Id_Product = @P1) AND (Is_deleted = 0); " + 
-                        "INSERT INTO HistoryOfChangesOfPrices( " + 
-                        "IDOfDrugstore, IDOfProduct, ModificationOfPrice, ModifiedPrice, DateOfChange) " + 
-                        "VALUES({0}, @P1, 3, 0, GetDate());", 
-                        IDOfDrugstore), 
-                        ConnectionToBase);
-                //
-                UpdatingOfDeletingOfPricesOfDrugstore.Parameters.Add("@P1", SqlDbType.Int, 0, "ID");
-                //
-                // Assignment Of Commands
-                //
-                _UpdatingOfData.ContinueUpdateOnError = true;
-                _UpdatingOfData.UpdateCommand = UpdatingOfDeletingOfPricesOfDrugstore;
+                //SqlCommand UpdatingOfDeletingOfPricesOfDrugstore = 
+                //    new SqlCommand(
+                //        String.Format(
+                //        "UPDATE Price_List " + 
+                //        "SET Date_upd = GetDate(), Is_deleted = 1 " + 
+                //        "WHERE (Id_Pharmacy = {0}) AND (Id_Product = @P1) AND (Is_deleted = 0); " + 
+                //        "INSERT INTO HistoryOfChangesOfPrices( " + 
+                //        "IDOfDrugstore, IDOfProduct, ModificationOfPrice, ModifiedPrice, DateOfChange) " + 
+                //        "VALUES({0}, @P1, 3, 0, GetDate());", 
+                //        IDOfDrugstore), 
+                //        ConnectionToBase);
+                ////
+                //UpdatingOfDeletingOfPricesOfDrugstore.Parameters.Add("@P1", SqlDbType.Int, 0, "ID");
+                ////
+                //// Assignment Of Commands
+                ////
+                //_UpdatingOfData.ContinueUpdateOnError = true;
+                //_UpdatingOfData.UpdateCommand = UpdatingOfDeletingOfPricesOfDrugstore;
                 //
                 // Updating
                 //
-                try { UpdateOfUpdatingData(IDsForDeleting, String.Format("Price_list Deleting {0}", IDOfDrugstore)); }
+                try
+                {
+                    PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted)
+                    .Join<price_list, int, int, price_list>(IDsForDeleting_IE_i, p => p.Id_Product, pt => pt, (p, pt) => p)
+                    .UpdateAsync(pl => new price_list { Is_deleted = true });
+
+                    PhrmInf.HistoryOfChangesOfPrices.AddRange(IDsForDeleting_IE_HP);
+                    //UpdateOfUpdatingData(IDsForDeleting, String.Format("Price_list Deleting {0}", IDOfDrugstore));
+                }
                 catch (Exception E)
                 {
                     //
-                    if (ConnectionToBase.State == ConnectionState.Open)
-                        ConnectionToBase.Close();
+                    //if (ConnectionToBase.State == ConnectionState.Open)
+                    //    ConnectionToBase.Close();
                     //
                     RecordingInLogFile(String.Format("Ошибка при пометке на удаление: {0}", E.Message));
                 }
