@@ -17,9 +17,6 @@ namespace PharmaceuticalInformation.Server
 
         #region ' Fields '
 
-        //
-        private SqlConnection ConnectionToBase;
-        private SqlDataAdapter _UpdatingOfData;
         private PhrmInfTESTEntities PhrmInf;
         //
         private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfData;
@@ -49,43 +46,15 @@ namespace PharmaceuticalInformation.Server
             //
             // Initializing Fields
             //
-            //this.StringOfConnection = StringOfConnection;
-            //
-            PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
-
-            _UpdatingOfData = new SqlDataAdapter();
-            _UpdatingOfData.ContinueUpdateOnError = true;
-            //
-            // Creating Of Connection
-            //
             try
             {
-                ConnectionToBase = new SqlConnection(StringOfConnection);
-                ConnectionToBase.Open();
-                ConnectionToBase.Close();
+                PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
             }
             catch (Exception E) { throw new Exception(String.Format("Ошибка при создании подключения экспорта: {0}", E)); }
             //
             // !!!
             //
             UpdatingOfData = new Updating.UpdatingOfDataOfInformationForMsSQL(StringOfConnection, PathToLogFile);
-        }
-
-        #endregion
-
-
-        #region ' Creating '
-
-        // Creating Command
-        private DbCommand CreatingCommand(string TextOfCommand, DbParameter[] ParametersOfCommand)
-        {
-            //
-            DbCommand CreatedCommand = new SqlCommand(TextOfCommand, ConnectionToBase);
-            //
-            for (int i = 0; i <= ParametersOfCommand.GetUpperBound(0); i++)
-                CreatedCommand.Parameters.Add(ParametersOfCommand[i]);
-            // Return
-            return CreatedCommand;
         }
 
         #endregion
@@ -637,35 +606,6 @@ namespace PharmaceuticalInformation.Server
             }            
         }
 
-        // Updating Table Of Service
-        private void UpdatingTableOfService(
-            DataTable TableForUpdating, string TextOfCommand, string NameOfTable, DbParameter[] ParametersOfCommand)
-        {
-            //
-            // Status Of Modified
-            //
-            TableForUpdating.AcceptChanges();
-            foreach (DataRow CurrentRow in TableForUpdating.Rows)
-                CurrentRow.SetModified();
-            /*if (NameOfTable != "LogsOfDrugstores")
-                CurrentRow.SetModified();
-            else
-                CurrentRow.SetAdded();*/
-            //
-            //if (NameOfTable != "LogsOfDrugstores")
-            _UpdatingOfData.UpdateCommand = (SqlCommand)CreatingCommand(TextOfCommand, ParametersOfCommand);
-            /*else
-                _UpdatingOfData.InsertCommand = (SqlCommand)CreatingCommand(TextOfCommand, ParametersOfCommand);*/
-            //
-            //if (NameOfTable != "LogsOfDrugstores")
-            _UpdatingOfData.UpdateCommand.CommandType = CommandType.StoredProcedure;
-            //
-            // Updating
-            //
-            UpdateOfUpdatingData(TableForUpdating, NameOfTable);
-            //
-        }
-
         #endregion
 
 
@@ -777,12 +717,6 @@ namespace PharmaceuticalInformation.Server
                 //
                 // Getting AllPrices From Drugstore
                 //
-                /*
-                 object Obj = PricesOfDrugstore.Rows[i2]["AllPrices"];
-                 Console.WriteLine(Obj is bool);
-                 Console.WriteLine(Obj == null);
-                 Console.WriteLine(Obj is DBNull);
-                 */
                 bool AllPrices = false;
                 for (int i2 = 0; i2 < PricesOfDrugstore.Rows.Count; i2++)
                     if (!(PricesOfDrugstore.Rows[i2]["AllPrices"] is DBNull))
@@ -888,18 +822,11 @@ namespace PharmaceuticalInformation.Server
             }
            
             ////
-            //// Updating and Inserting
+            //// Updating and Inserting global price_list from recived prices
             ////
-            //UpdateOfUpdatingData(PricesOfDrugstore, String.Format("Price_list {0}", IDOfDrugstore));
 
             IEnumerable<PriceListDrugstore> PricesOfDrugstore_IE = PricesOfDrugstore.AsEnumerable()
                 .Select(p => new PriceListDrugstore { ID_PR = p.ID_PR, Price = p.Price, Deleting = p.Deleting, Preferential = p.Preferential }).ToArray();
-
-            IEnumerable<PriceListDrugstore> pld_upd = PricesOfDrugstore_IE.Join(PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore),
-                pld => pld.ID_PR, p => p.Id_Product, (pld, p) => pld);
-
-            IEnumerable <PriceListDrugstore> pld_ins =
-                    PricesOfDrugstore_IE.Where(pld => !PhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any());
 
 
             try
@@ -1068,101 +995,6 @@ namespace PharmaceuticalInformation.Server
             }
         }
 
-        // TMP
-        protected void SetStatusOfRows(DataTable TableForStatus,
-            string TextOfCheckingOfDeleting, string TextOfCheckingOfExisting, DbParameter[] ParametersOfCommand)
-        {
-            //
-            try
-            {
-                //
-                TableForStatus.Columns.Add("TMP_Status", typeof(string));
-                //
-                TableForStatus.AcceptChanges();
-                foreach (DataRow CurrentRow in TableForStatus.Rows)
-                    CurrentRow.SetModified();
-                //
-                string TextOfExistingOfCommand = "";
-                if (TextOfCheckingOfDeleting != "")
-                    TextOfExistingOfCommand = String.Format(
-                        "IF ({0}) SET @Status = 'REM' ELSE IF ({1}) SET @Status = 'MOD' ELSE SET @Status = 'ADD';",
-                        TextOfCheckingOfDeleting, TextOfCheckingOfExisting);
-                else
-                    TextOfExistingOfCommand = String.Format(
-                        "IF ({0}) SET @Status = 'MOD' ELSE SET @Status = 'ADD';",
-                        TextOfCheckingOfExisting);
-                //
-                DbParameter[] ParametersOfExistingCommand =
-                    new DbParameter[ParametersOfCommand.Length + 1];
-                for (int i = 0; i < ParametersOfCommand.Length; i++)
-                    ParametersOfExistingCommand[i] = ParametersOfCommand[i];
-                ParametersOfExistingCommand[ParametersOfCommand.Length] =
-                    new SqlParameter("@Status", SqlDbType.VarChar, 3, "TMP_Status");
-                //
-                DbCommand CommandOfExisting = CreatingCommand(TextOfExistingOfCommand, ParametersOfExistingCommand);
-                CommandOfExisting.Parameters["@Status"].Direction = ParameterDirection.Output;
-                SqlDataAdapter ReadingStatus = new SqlDataAdapter();
-                ReadingStatus.UpdateCommand = (SqlCommand)CommandOfExisting;
-                //
-                ReadingStatus.Update(TableForStatus);
-                //
-                foreach (DataRow CurrentRow in TableForStatus.Rows)
-                    switch (CurrentRow["TMP_Status"].ToString())
-                    {
-                        case "REM":
-                            CurrentRow.Delete();
-                            break;
-                        case "ADD":
-                            CurrentRow.SetAdded();
-                            break;
-                        case "MOD":
-                            CurrentRow.SetModified();
-                            break;
-                    }
-                //
-                TableForStatus.Columns.Remove("TMP_Status");
-            }
-            catch (Exception E) { ReturningMessageAboutError("Ошибка при чтении статуса строк", E, false); }
-        }
-
-        // TMP
-        private void UpdateOfUpdatingData(DataTable DataForUpdating, string TableName)
-        {
-            //
-            // Updating
-            //
-            if ((TableName != "Information") &&
-                (TableName != "InformationOfSettings") &&
-                (TableName != "ListOfSettings") &&
-                (TableName != "RegistrationOfDrugstores") &&
-                (TableName != "DatesOfTransfer") &&
-                (TableName != "LogsOfDrugstores") &&
-                (TableName != "AnnouncementsOfDrugstore") &&
-                (TableName != "PriceList"))
-                RecordingInLogFile(String.Format("Start Updating Table Of {0}", TableName));
-            //
-            int CountOfUpdating = 0;
-            try { CountOfUpdating = _UpdatingOfData.Update(DataForUpdating); }
-            catch (Exception E)
-            { ReturningMessageAboutError(String.Format("Ошибка при обновлении таблицы {0}", TableName), E, false); }
-            //
-            if ((TableName != "Information") &&
-                (TableName != "InformationOfSettings") &&
-                (TableName != "ListOfSettings") &&
-                (TableName != "RegistrationOfDrugstores") &&
-                (TableName != "DatesOfTransfer") &&
-                (TableName != "LogsOfDrugstores") &&
-                (TableName != "AnnouncementsOfDrugstore") &&
-                (TableName != "PriceList"))
-                RecordingInLogFile(String.Format("End Updating Table Of {0}", TableName));
-            //
-            // Clearing Of UpdatingOfData 
-            //
-            _UpdatingOfData.InsertCommand = null;
-            _UpdatingOfData.UpdateCommand = null;
-            _UpdatingOfData.DeleteCommand = null;
-        }
-
         #endregion
 
 
@@ -1192,29 +1024,6 @@ namespace PharmaceuticalInformation.Server
             // Return
             //
             return ResultOfActivation;
-        }
-
-        #endregion
-
-
-        #region ' Management Of Connection '
-
-        // Opening Connection
-        private void OpeningConnection(DbConnection Connection)
-        {
-            //
-            if (Connection != null)
-                if (Connection.State != ConnectionState.Open)
-                    Connection.Open();
-        }
-
-        // Closing Connection
-        private void ClosingConnection(DbConnection Connection)
-        {
-            //
-            if (Connection != null)
-                if (Connection.State == ConnectionState.Open)
-                    Connection.Close();
         }
 
         #endregion
@@ -1384,35 +1193,10 @@ namespace PharmaceuticalInformation.Server
                             }
                             break;
                     }
-                }
-                //
-                //this.RecordingInLogFile("");
+                }                
             }
         }
 
-        // Clearing New Rows In Pharmacy
-        public void ClearingNewRowsInPharmacy(DataTable DataForPharmacy)
-        {
-            //
-            // Creating Command Of Reading Of Status Of Rows
-            //
-            DbParameter[] ParametersOfSelectionCommand = new DbParameter[1] {
-                new SqlParameter("@P1", SqlDbType.Int, 0, "Id_Pharmacy") };
-            SetStatusOfRows(DataForPharmacy,
-                "", "EXISTS(SELECT Id_Pharmacy FROM Pharmacy WHERE Id_Pharmacy = @P1)", ParametersOfSelectionCommand);
-            //
-            // Clearing Pharmacy
-            //
-            foreach (DataRow CurrentRow in DataForPharmacy.Rows)
-                if (CurrentRow.RowState == DataRowState.Added)
-                {
-                    CurrentRow.AcceptChanges();
-                    CurrentRow.Delete();
-                }
-            //
-            DataForPharmacy.AcceptChanges();
-            //
-        }
 
         #endregion
 

@@ -5,6 +5,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using PharmaceuticalInformation.BaseTypes;
+using Test_pharm_server;
+using System.Linq;
+using EntityFramework.Extensions;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -12,6 +15,8 @@ namespace PharmaceuticalInformation.Server
     {
 
         #region ' Fields '
+
+        private PhrmInfTESTEntities PhrmInf;
 
         private string StringOfConnection;
         private SqlConnection ConnectionToBase;
@@ -33,7 +38,11 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Of Connection
             //
-            try { ConnectionToBase = new SqlConnection(this.StringOfConnection); }
+            try
+            {
+                PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
+                ConnectionToBase = new SqlConnection(this.StringOfConnection);
+            }
             catch (Exception E)
             {
                 throw new Exception(
@@ -213,18 +222,20 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Updating Date
             //
-            SqlCommand CommandOfUpdating = new SqlCommand(
-                "UPDATE Service SET Date_Service = @P1 WHERE Id_Service = 8;", ConnectionToBase);
-            CommandOfUpdating.Parameters.Add(new SqlParameter("@P1", SqlDbType.DateTime));
-            CommandOfUpdating.Parameters["@P1"].Value = DateOfExported;
+
+            //SqlCommand CommandOfUpdating = new SqlCommand(
+            //    "UPDATE Service SET Date_Service = @P1 WHERE Id_Service = 8;", ConnectionToBase);
+            //CommandOfUpdating.Parameters.Add(new SqlParameter("@P1", SqlDbType.DateTime));
+            //CommandOfUpdating.Parameters["@P1"].Value = DateOfExported;
             //
             // Executing Updating
             //
             try
             {
-                CommandOfUpdating.Connection.Open();
-                CommandOfUpdating.ExecuteNonQuery();
-                CommandOfUpdating.Connection.Close();
+                PhrmInf.Services.Where(s => s.Id_Service == 8).Update(s => new Test_pharm_server.Service { Date_Service = DateOfExported });
+                //CommandOfUpdating.Connection.Open();
+                //CommandOfUpdating.ExecuteNonQuery();
+                //CommandOfUpdating.Connection.Close();
             }
             catch (Exception E)
             {
@@ -245,16 +256,17 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Increment
             //
-            SqlCommand CommandOfUpdating = new SqlCommand(
-                    "UPDATE Service SET Value = Value + 1 WHERE Id_Service = 8;", ConnectionToBase);
+            //SqlCommand CommandOfUpdating = new SqlCommand(
+            //        "UPDATE Service SET Value = Value + 1 WHERE Id_Service = 8;", ConnectionToBase);
             //
             // Executing Increment
             //
             try
             {
-                CommandOfUpdating.Connection.Open();
-                CommandOfUpdating.ExecuteNonQuery();
-                CommandOfUpdating.Connection.Close();
+                PhrmInf.Services.Where(s => s.Id_Service == 8).Update(s => new Test_pharm_server.Service { Value = s.Value + 1 });
+                //CommandOfUpdating.Connection.Open();
+                //CommandOfUpdating.ExecuteNonQuery();
+                //CommandOfUpdating.Connection.Close();
             }
             catch (Exception E)
             {
@@ -280,10 +292,10 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Checking
             //
-            SqlCommand GettingCount = 
-                new SqlCommand(
-                    "SELECT COUNT(*) FROM Price_List " + 
-                    "WHERE Date_upd > (SELECT Date_Service FROM Service WHERE Id_Service = 6);", ConnectionToBase);
+            //SqlCommand GettingCount = 
+            //    new SqlCommand(
+            //        "SELECT COUNT(*) FROM Price_List " + 
+            //        "WHERE Date_upd > (SELECT Date_Service FROM Service WHERE Id_Service = 6);", ConnectionToBase);
             //
             // Getting Count Of Exported Prices
             //
@@ -291,19 +303,20 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
+                CountOfExportedPrices = PhrmInf.price_list.Where(p => p.Date_upd > PhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Date_Service).Max()).Count();
                 //
-                GettingCount.Connection.Open();
-                //
-                CountOfExportedPrices = Convert.ToInt32(GettingCount.ExecuteScalar());
-                //
-                GettingCount.Connection.Close();
+                //GettingCount.Connection.Open();
+                ////
+                //CountOfExportedPrices = Convert.ToInt32(GettingCount.ExecuteScalar());
+                ////
+                //GettingCount.Connection.Close();
             }
             catch (Exception E)
             {
                 //
                 RecordingInLogFile(String.Format("ERROR Ошибка при проверке наличия экспортных Прайс-Листов: {0}", E.Message));
                 //
-                GettingCount.Connection.Close();
+                //GettingCount.Connection.Close();
             }
             //
             // Checking Existence
@@ -324,19 +337,20 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            SqlCommand GettingNumber = 
-                new SqlCommand("SELECT Value FROM Service WHERE Id_Service = 6;", ConnectionToBase);
+            //SqlCommand GettingNumber = 
+            //    new SqlCommand("SELECT Value FROM Service WHERE Id_Service = 6;", ConnectionToBase);
             //
             // Getting Number
             //
             try
             {
+                NumberOfExported = PhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Value).Max();
                 //
-                GettingNumber.Connection.Open();
-                //
-                NumberOfExported = Convert.ToInt32(GettingNumber.ExecuteScalar());
-                //
-                GettingNumber.Connection.Close();
+                //GettingNumber.Connection.Open();
+                ////
+                //NumberOfExported = Convert.ToInt32(GettingNumber.ExecuteScalar());
+                ////
+                //GettingNumber.Connection.Close();
             }
             catch (Exception E)
             {
@@ -344,8 +358,6 @@ namespace PharmaceuticalInformation.Server
                 NumberOfExported = -1;
                 //
                 RecordingInLogFile(String.Format("ERROR Ошибка при получении номера экспортирования Прайс-Листов: {0}", E.Message));
-                //
-                GettingNumber.Connection.Close();
             }
             //
             // Return
