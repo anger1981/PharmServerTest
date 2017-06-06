@@ -848,12 +848,6 @@ namespace PharmaceuticalInformation.Server
                 //
                 CountOfModification += IDsForDeleting.Rows.Count;
                 //
-                // Assignment Of Status Of Rows
-                //
-                //IDsForDeleting.AcceptChanges();
-                //foreach (DataRow CurrentIDForDeleting in IDsForDeleting.Rows)
-                //    CurrentIDForDeleting.SetModified();
-                //
                 // Creating Command Of Updating Deleting
                 //
                 IEnumerable<dynamic> IDsForDeleting_IE = IDsForDeleting.AsEnumerable();
@@ -870,29 +864,6 @@ namespace PharmaceuticalInformation.Server
                         DateOfChange = DateTime.Now
                     });
 
-
-
-                //SqlCommand UpdatingOfDeletingOfPricesOfDrugstore = 
-                //    new SqlCommand(
-                //        String.Format(
-                //        "UPDATE Price_List " + 
-                //        "SET Date_upd = GetDate(), Is_deleted = 1 " + 
-                //        "WHERE (Id_Pharmacy = {0}) AND (Id_Product = @P1) AND (Is_deleted = 0); " + 
-                //        "INSERT INTO HistoryOfChangesOfPrices( " + 
-                //        "IDOfDrugstore, IDOfProduct, ModificationOfPrice, ModifiedPrice, DateOfChange) " + 
-                //        "VALUES({0}, @P1, 3, 0, GetDate());", 
-                //        IDOfDrugstore), 
-                //        ConnectionToBase);
-                ////
-                //UpdatingOfDeletingOfPricesOfDrugstore.Parameters.Add("@P1", SqlDbType.Int, 0, "ID");
-                ////
-                //// Assignment Of Commands
-                ////
-                //_UpdatingOfData.ContinueUpdateOnError = true;
-                //_UpdatingOfData.UpdateCommand = UpdatingOfDeletingOfPricesOfDrugstore;
-                //
-                // Updating
-                //
                 try
                 {
                     PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted)
@@ -915,90 +886,46 @@ namespace PharmaceuticalInformation.Server
                 //
                 UpdatingReportsOfImporting(IDOfDrugstore, IDOfReception, IDsForDeleting.Rows.Count);
             }
-            //
-            // Creating Command Of Reading Of Status Of Rows
-            //
-            //DbParameter[] ParametersOfSelectionCommand = new DbParameter[1] { 
-            //        new SqlParameter("@P1", SqlDbType.Int, 0, "ID_PR") };
-            //
-            //SetStatusOfRows(PricesOfDrugstore,
-            //    "", 
-            //    String.Format(
-            //    "(EXISTS(SELECT * FROM Price_list WHERE ((ID_Pharmacy = {0}) AND (Id_Product = @P1))))", 
-            //    IDOfDrugstore), 
-            //    ParametersOfSelectionCommand);
-            //
-            // Calculation Count Of Rows
-            //
-            /*int CountOfModifyingRows = 0;
-            foreach (DataRow CurrentRow in PricesOfDrugstore.Rows)
-                if ((CurrentRow.RowState == DataRowState.Added) || (CurrentRow.RowState == DataRowState.Modified))
-                    CountOfModifyingRows++;*/
-            //CountOfModification += PricesOfDrugstore.GetChanges().Rows.Count;
+           
             ////
-            //ReadingStatus(PricesOfDrugstore);
-            ////
-            //// Creating Parameters Of Procedure Of Inserting
-            ////
-            //DbParameter[] ParametersOfInsertingCommand = new DbParameter[6] {
-            //    new SqlParameter("@IDOfDrugstore", SqlDbType.Int                ), 
-            //    new SqlParameter("@IDOfReception", SqlDbType.Int                ), 
-            //    new SqlParameter("@P1",            SqlDbType.Int,     0, "ID_PR"), 
-            //    new SqlParameter("@P2",            SqlDbType.Decimal, 0, "Price"), 
-            //    new SqlParameter("@P3",            SqlDbType.Bit,     0, "Deleting"),
-            //    new SqlParameter("@P4",            SqlDbType.Bit,     0, "Preferential")};
-            ////
-            //SqlCommand CommandOfInsertingPriceList =
-            //    (SqlCommand)CreatingCommand("InsertingInPriceList", ParametersOfInsertingCommand);
-            //CommandOfInsertingPriceList.CommandType = CommandType.StoredProcedure;
-            ////
-            //CommandOfInsertingPriceList.Parameters["@IDOfDrugstore"].Value = IDOfDrugstore;
-            //CommandOfInsertingPriceList.Parameters["@IDOfReception"].Value = IDOfReception;
-            ////
-            //// Creating Parameters Of Procedure Of Updating
-            ////
-            //DbParameter[] ParametersOfUpdatingCommand = new DbParameter[6] {
-            //    new SqlParameter("@IDOfDrugstore", SqlDbType.Int                ), 
-            //    new SqlParameter("@IDOfReception", SqlDbType.Int                ), 
-            //    new SqlParameter("@P1",            SqlDbType.Int,     0, "ID_PR"), 
-            //    new SqlParameter("@P2",            SqlDbType.Decimal, 0, "Price"), 
-            //    new SqlParameter("@P3",            SqlDbType.Bit,     0, "Deleting"), 
-            //    new SqlParameter("@P4",            SqlDbType.Bit,     0, "Preferential")};
-            ////
-            //SqlCommand CommandOfUpdatingPriceList =
-            //    (SqlCommand)CreatingCommand("UpdatingPriceList", ParametersOfUpdatingCommand);
-            //CommandOfUpdatingPriceList.CommandType = CommandType.StoredProcedure;
-            ////
-            //CommandOfUpdatingPriceList.Parameters["@IDOfDrugstore"].Value = IDOfDrugstore;
-            //CommandOfUpdatingPriceList.Parameters["@IDOfReception"].Value = IDOfReception;
-            ////
-            //// Assignment Of Commands
-            ////
-            ////_UpdatingOfData.ContinueUpdateOnError = true;
-            //_UpdatingOfData.InsertCommand = CommandOfInsertingPriceList;
-            //_UpdatingOfData.UpdateCommand = CommandOfUpdatingPriceList;
-            ////
-            //// Updating
+            //// Updating and Inserting
             ////
             //UpdateOfUpdatingData(PricesOfDrugstore, String.Format("Price_list {0}", IDOfDrugstore));
-
 
             IEnumerable<PriceListDrugstore> PricesOfDrugstore_IE = PricesOfDrugstore.AsEnumerable()
                 .Select(p => new PriceListDrugstore { ID_PR = p.ID_PR, Price = p.Price, Deleting = p.Deleting, Preferential = p.Preferential }).ToArray();
 
+            IEnumerable<PriceListDrugstore> pld_upd = PricesOfDrugstore_IE.Join(PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore),
+                pld => pld.ID_PR, p => p.Id_Product, (pld, p) => pld);
+
+            IEnumerable <PriceListDrugstore> pld_ins =
+                    PricesOfDrugstore_IE.Where(pld => !PhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any());
+
+
             try
             {
-                //Update existing in summary price list prices from PriceListDrugstore  
-                PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore)
-                    .Join(PricesOfDrugstore_IE ,p => p.Id_Product ,pld => pld.ID_PR
-                          ,(p, pld) => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential));
+                //Update existing in summary price list prices from PriceListDrugstore
+
+                //foreach (PriceListDrugstore pld in pld_upd)
+                //    PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential);
+
+                PricesOfDrugstore_IE.Join(PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore),
+                pld => pld.ID_PR, p => p.Id_Product, (pld, p) => pld)
+                .Select(pld => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
+
+                //PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore)
+                //    .Join(PricesOfDrugstore_IE, p => p.Id_Product, pld => pld.ID_PR
+                //          ,(p, pld) => pld)
+                //          .Select(pld => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
+
+
 
                 //Inserting new price, which not exists in summary price_list
-                IEnumerable<PriceListDrugstore> pld_ins =
-                    PricesOfDrugstore_IE.Where(pld => !PhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any());
-                //.Select(pld => PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential));
-                foreach (PriceListDrugstore pld in pld_ins)
-                    PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential);
+
+                PricesOfDrugstore_IE.Where(pld => !PhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any())
+                .Select(pld => PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
+                //foreach (PriceListDrugstore pld in pld_ins)
+                //    PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential);
 
                 //PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, 454, 10000, false, false);
 
