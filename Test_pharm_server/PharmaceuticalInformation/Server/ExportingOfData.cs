@@ -8,6 +8,7 @@ using PharmaceuticalInformation.BaseTypes;
 using Test_pharm_server;
 using System.Linq;
 using EntityFramework.Extensions;
+using Test_pharm_server.PharmaceuticalInformation.DataTools;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -17,6 +18,15 @@ namespace PharmaceuticalInformation.Server
         #region ' Fields '
 
         private PhrmInfTESTEntities PhrmInf;
+
+        public class PriceListGlobal
+        {
+            public int ID_DR;
+            public int ID_PR;
+            public decimal Price;
+            public DateTime Actual;
+            public bool Preferential;
+        }
 
         private string StringOfConnection;
         private SqlConnection ConnectionToBase;
@@ -373,19 +383,20 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            SqlCommand GettingDate = 
-                new SqlCommand("SELECT Date_Service FROM Service WHERE Id_Service = 6;", ConnectionToBase);
+            //SqlCommand GettingDate = 
+            //    new SqlCommand("SELECT Date_Service FROM Service WHERE Id_Service = 6;", ConnectionToBase);
             //
             // Getting Date
             //
             try
             {
+                DateOfExported = PhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Date_Service).Max();
                 //
-                GettingDate.Connection.Open();
-                //
-                DateOfExported = Convert.ToDateTime(GettingDate.ExecuteScalar());
-                //
-                GettingDate.Connection.Close();
+                //GettingDate.Connection.Open();
+                ////
+                //DateOfExported = Convert.ToDateTime(GettingDate.ExecuteScalar());
+                ////
+                //GettingDate.Connection.Close();
             }
             catch (Exception E)
             {
@@ -393,8 +404,6 @@ namespace PharmaceuticalInformation.Server
                 DateOfExported = new DateTime(1947, 07, 02);
                 //
                 RecordingInLogFile(String.Format("ERROR Ошибка при получении даты экспортирования Прайс-Листов: {0}", E.Message));
-                //
-                GettingDate.Connection.Close();
             }
             //
             // Return
@@ -410,19 +419,20 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            SqlCommand GettingDate = 
-                new SqlCommand("SELECT MAX(Date_upd) FROM Price_List", ConnectionToBase);
+            //SqlCommand GettingDate = 
+            //    new SqlCommand("SELECT MAX(Date_upd) FROM Price_List", ConnectionToBase);
             //
             // Getting Date
             //
             try
             {
+                DateOfExported = PhrmInf.price_list.Select(p => p.Date_upd).Max();
                 //
-                GettingDate.Connection.Open();
-                //
-                DateOfExported = Convert.ToDateTime(GettingDate.ExecuteScalar());
-                //
-                GettingDate.Connection.Close();
+                //GettingDate.Connection.Open();
+                ////
+                //DateOfExported = Convert.ToDateTime(GettingDate.ExecuteScalar());
+                ////
+                //GettingDate.Connection.Close();
             }
             catch (Exception E)
             {
@@ -430,8 +440,6 @@ namespace PharmaceuticalInformation.Server
                 DateOfExported = new DateTime(1947, 07, 02);
                 //
                 RecordingInLogFile(String.Format("ERROR Ошибка при получении даты экспортирования Прайс-Листов: {0}", E.Message));
-                //
-                GettingDate.Connection.Close();
             }
             //
             // Return
@@ -447,17 +455,17 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Of Filling Of PriceLists
             //
-            string TextOfCommandOfSelection = 
-                "SELECT ID_Pharmacy AS 'ID_DR', ID_Product AS 'ID_PR', Price AS 'Price', " + 
-                "Actual AS 'Actual', Is_Privilege AS 'Preferential' " + 
-                "FROM Price_List " + 
-                "WHERE (Is_Deleted = 0) " + 
-                "ORDER BY ID_Pharmacy, ID_Product";
-            //
-            SqlCommand SelectionOfPriceLists = 
-                new SqlCommand(TextOfCommandOfSelection, ConnectionToBase);
-            //
-            SqlDataAdapter FillingOfPriceLists = new SqlDataAdapter(SelectionOfPriceLists);
+            //string TextOfCommandOfSelection =
+            //    "SELECT ID_Pharmacy AS 'ID_DR', ID_Product AS 'ID_PR', Price AS 'Price', " +
+            //    "Actual AS 'Actual', Is_Privilege AS 'Preferential' " +
+            //    "FROM Price_List " +
+            //    "WHERE (Is_Deleted = 0) " +
+            //    "ORDER BY ID_Pharmacy, ID_Product";
+            ////
+            //SqlCommand SelectionOfPriceLists =
+            //    new SqlCommand(TextOfCommandOfSelection, ConnectionToBase);
+            ////
+            //SqlDataAdapter FillingOfPriceLists = new SqlDataAdapter(SelectionOfPriceLists);
             //
             // Filling Of PriceLists
             //
@@ -465,12 +473,25 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable ExportedPriceLists = new DataTable("PriceLists");
             bool ResultOfFilling = true;
-            //
+
             try
             {
+                IEnumerable<PriceListGlobal> ExportedPriceListsIEn = PhrmInf.price_list.Where(pl => !pl.Is_deleted).Select(pl => new PriceListGlobal
+                {
+                    ID_DR = pl.Id_Pharmacy
+                    ,
+                    ID_PR = pl.Id_Product,
+                    Price = (decimal)pl.Price,
+                    Actual = pl.Actual,
+                    Preferential = pl.Is_privilege
+                });
+
+                ExportedPriceListsIEn.ToList().Sort((x, y) => 10 * Math.Sign(x.ID_DR - y.ID_DR) + Math.Sign(x.ID_PR - y.ID_PR));
+
+                ExportedPriceListsIEn.Fill(ref ExportedPriceLists);
                 //
-                FillingOfPriceLists.FillSchema(ExportedPriceLists, SchemaType.Source);
-                FillingOfPriceLists.Fill(ExportedPriceLists);
+                //FillingOfPriceLists.FillSchema(ExportedPriceLists, SchemaType.Source);
+                //FillingOfPriceLists.Fill(ExportedPriceLists);
             }
             catch (Exception E)
             { 
@@ -584,21 +605,22 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Updating 
             //
-            SqlCommand CommandOfUpdating = new SqlCommand(
-                "UPDATE Service SET Value = Value + 1, Date_Service = @P1 WHERE Id_Service = 6;", ConnectionToBase);
-            CommandOfUpdating.Parameters.Add(new SqlParameter("@P1", SqlDbType.DateTime));
-            CommandOfUpdating.Parameters["@P1"].Value = DateOfExported;
+            //SqlCommand CommandOfUpdating = new SqlCommand(
+            //    "UPDATE Service SET Value = Value + 1, Date_Service = @P1 WHERE Id_Service = 6;", ConnectionToBase);
+            //CommandOfUpdating.Parameters.Add(new SqlParameter("@P1", SqlDbType.DateTime));
+            //CommandOfUpdating.Parameters["@P1"].Value = DateOfExported;
             //
             // Updating Number And Date Of Exported PriceLists
             //
             try
             {
-                //
-                CommandOfUpdating.Connection.Open();
-                //
-                CommandOfUpdating.ExecuteNonQuery();
-                //
-                CommandOfUpdating.Connection.Close();
+                PhrmInf.Services.Where(s => s.Id_Service == 6).Update(s => new Test_pharm_server.Service { Value = s.Value + 1, Date_Service = DateOfExported });
+                ////
+                //CommandOfUpdating.Connection.Open();
+                ////
+                //CommandOfUpdating.ExecuteNonQuery();
+                ////
+                //CommandOfUpdating.Connection.Close();
             }
             catch (Exception E)
             {
@@ -606,8 +628,6 @@ namespace PharmaceuticalInformation.Server
                 ResultOfUpdating = false;
                 //
                 RecordingInLogFile(String.Format("ERROR Ошибка при обновлении номера экспорирования Прайс-Листов: {0}", E.Message));
-                //
-                CommandOfUpdating.Connection.Close();
             }
             //
             // Return
@@ -734,11 +754,20 @@ namespace PharmaceuticalInformation.Server
                     SqlDataAdapter ClearingData = new SqlDataAdapter();
                     ClearingData.DeleteCommand = CommandOfDeleting;
                     //
+
+
+
+                    PhrmInf.C__ModifiedData.Where(md => IDsOfModifications.AsEnumerable().Where(idm => (int)idm.IDOfModification == md.ID).Any());   /// JoinDataTable(ref IDsOfModifications, md.ID)).Delete();
                     try { ClearingData.Update(IDsOfModifications); }
                     catch (Exception E) 
                     { this.RecordingInLogFile(String.Format("Ошибка при удалении ID изменений: {0}", E.Message)); }
                 }
         }
+
+                    bool JoinDataTable(ref DataTable DT_Mod, int id)
+                    {
+                        return DT_Mod.AsEnumerable().Where(idm => Convert.ToInt32(idm.IDOfModification) == id).Any();
+                    }
 
         #endregion
 
