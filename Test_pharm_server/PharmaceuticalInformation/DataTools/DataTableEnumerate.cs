@@ -19,7 +19,7 @@ namespace Test_pharm_server.PharmaceuticalInformation.DataTools
 {
     public partial class LocalDataContext : DataContext
     {
-        public LocalDataContext() : base() { };
+        public LocalDataContext(string StrConn) : base(StrConn) {}
 
         [Function(Name = "GetDate", IsComposable = true)]
         public DateTime GetSystemDate()
@@ -34,13 +34,6 @@ namespace Test_pharm_server.PharmaceuticalInformation.DataTools
         public static bool ret_true(this price_list pl)
         {
             return pl.Is_deleted;
-        }
-
-        [Function(Name = "GetDate", IsComposable = true)]
-        public static DateTime GetSystemDate()
-        {
-            MethodInfo mi = MethodBase.GetCurrentMethod() as MethodInfo;
-            return (DateTime)this.ExecuteMethodCall(this, mi, new object[] { }).ReturnValue;
         }
 
         public static bool JoinDataTableProd(ref DataTable DT_Join, dynamic id, string col_name)

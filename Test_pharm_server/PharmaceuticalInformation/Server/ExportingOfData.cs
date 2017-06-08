@@ -21,6 +21,8 @@ namespace PharmaceuticalInformation.Server
 
         private PhrmInfTESTEntities PhrmInf;
 
+        private LocalDataContext LDC;
+
         public class PriceListGlobal
         {
             public int ID_DR;
@@ -52,6 +54,7 @@ namespace PharmaceuticalInformation.Server
             try
             {
                 PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
+                LDC = new LocalDataContext(StringOfConnection);
                 ConnectionToBase = new SqlConnection(this.StringOfConnection);
             }
             catch (Exception E)
@@ -779,24 +782,27 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Connection
             //
-            SqlConnection ConnectionToBase = new SqlConnection();
+            ///SqlConnection ConnectionToBase = new SqlConnection();
+            ///
+            DateTime CurrentDate = DateTime.MinValue;
             try
             {
-                ConnectionToBase = new SqlConnection(StringOfConnection);
-                ConnectionToBase.Open();
-                ConnectionToBase.Close();
+                CurrentDate = LDC.GetSystemDate();
+                //ConnectionToBase = new SqlConnection(StringOfConnection);
+                //ConnectionToBase.Open();
+                //ConnectionToBase.Close();
             }
             catch (Exception E) { this.RecordingInLogFile(String.Format("{0}: {1}", "Ошибка при создании подключения", E.Message)); }
             //
             // Getting Current Date
             //
 
-            PhrmInf.
+            //PhrmInf.
 
-            SqlCommand GettingData = new SqlCommand("SELECT GetDate() AS 'CurrentDate';", ConnectionToBase);
-            GettingData.Connection.Open();
-            DateTime CurrentDate = Convert.ToDateTime(GettingData.ExecuteScalar());
-            GettingData.Connection.Close();
+            //SqlCommand GettingData = new SqlCommand("SELECT GetDate() AS 'CurrentDate';", ConnectionToBase);
+            //GettingData.Connection.Open();
+            //DateTime CurrentDate = Convert.ToDateTime(GettingData.ExecuteScalar());
+            //GettingData.Connection.Close();
             //
             // Return
             //
@@ -808,16 +814,17 @@ namespace PharmaceuticalInformation.Server
         {
             //
             bool ResultOfOperation = true;
-            SqlCommand CommandOfUpdating = new SqlCommand(
-                "UPDATE Service SET Date_Service = @P1 WHERE Id_Service = 10;", ConnectionToBase);
-            CommandOfUpdating.Parameters.Add(new SqlParameter("@P1", SqlDbType.DateTime));
-            CommandOfUpdating.Parameters["@P1"].Value = DateOfExported;
+            //SqlCommand CommandOfUpdating = new SqlCommand(
+            //    "UPDATE Service SET Date_Service = @P1 WHERE Id_Service = 10;", ConnectionToBase);
+            //CommandOfUpdating.Parameters.Add(new SqlParameter("@P1", SqlDbType.DateTime));
+            //CommandOfUpdating.Parameters["@P1"].Value = DateOfExported;
             // Updating Date
             try
             {
-                CommandOfUpdating.Connection.Open();
-                CommandOfUpdating.ExecuteNonQuery();
-                CommandOfUpdating.Connection.Close();
+                PhrmInf.Services.Where(s => s.Id_Service == 10).UpdateAsync(s => new Test_pharm_server.Service { Date_Service = DateOfExported });
+                //CommandOfUpdating.Connection.Open();
+                //CommandOfUpdating.ExecuteNonQuery();
+                //CommandOfUpdating.Connection.Close();
             }
             catch (Exception E)
             {
@@ -841,25 +848,27 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Command Of Selection
             //
-            SqlCommand CommandOfSelection = new SqlCommand(
-                "SELECT * FROM Price_List WHERE Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1;",
-                ConnectionToBase);
-            //
-            // Addition Of Parameters
-            //
-            CommandOfSelection.Parameters.Add("@P1", SqlDbType.DateTime);
-            CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
-            //
-            // Creating DataAdapter For Filling
-            //
-            SqlDataAdapter FillingData = new SqlDataAdapter(CommandOfSelection);
+            //SqlCommand CommandOfSelection = new SqlCommand(
+            //    "SELECT * FROM Price_List WHERE Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1;",
+            //    ConnectionToBase);
+            ////
+            //// Addition Of Parameters
+            ////
+            //CommandOfSelection.Parameters.Add("@P1", SqlDbType.DateTime);
+            //CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
+            ////
+            //// Creating DataAdapter For Filling
+            ////
+            //SqlDataAdapter FillingData = new SqlDataAdapter(CommandOfSelection);
             //
             // Filling Of Data
             //
             try
             {
-                FillingData.FillSchema(PriceListForExporting, SchemaType.Source);
-                FillingData.Fill(PriceListForExporting);
+                PhrmInf.price_list.Where(p => p.Date_upd >= PhrmInf.Services.Where(s => s.Id_Service == 10).Select(s => s.Date_Service).Max()
+                && p.Date_upd <= DateOfExported).Fill(ref PriceListForExporting);
+                //FillingData.FillSchema(PriceListForExporting, SchemaType.Source);
+                //FillingData.Fill(PriceListForExporting);
             }
             catch (Exception E)
             {
@@ -917,28 +926,30 @@ namespace PharmaceuticalInformation.Server
             //
             bool SuccessfulFilling = true;
             DataTable PriceListForExporting = new DataTable();
-            //
-            // Creating Command Of Selection
-            //
-            SqlCommand CommandOfSelection = new SqlCommand(
-                "SELECT * FROM Price_List WHERE Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1;",
-                ConnectionToBase);
-            //
-            // Addition Of Parameters
-            //
-            CommandOfSelection.Parameters.Add("@P1", SqlDbType.DateTime);
-            CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
-            //
-            // Creating DataAdapter For Filling
-            //
-            SqlDataAdapter FillingData = new SqlDataAdapter(CommandOfSelection);
+            ////
+            //// Creating Command Of Selection
+            ////
+            //SqlCommand CommandOfSelection = new SqlCommand(
+            //    "SELECT * FROM Price_List WHERE Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1;",
+            //    ConnectionToBase);
+            ////
+            //// Addition Of Parameters
+            ////
+            //CommandOfSelection.Parameters.Add("@P1", SqlDbType.DateTime);
+            //CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
+            ////
+            //// Creating DataAdapter For Filling
+            ////
+            //SqlDataAdapter FillingData = new SqlDataAdapter(CommandOfSelection);
             //
             // Filling Of Data
             //
             try
             {
-                FillingData.FillSchema(PriceListForExporting, SchemaType.Source);
-                FillingData.Fill(PriceListForExporting);
+                PhrmInf.price_list.Where(p => p.Date_upd >= PhrmInf.Services.Where(s => s.Id_Service == 10).Select(s => s.Date_Service).Max()
+                && p.Date_upd <= DateOfExported).Fill(ref PriceListForExporting);
+                //FillingData.FillSchema(PriceListForExporting, SchemaType.Source);
+                //FillingData.Fill(PriceListForExporting);
             }
             catch (Exception E)
             {
