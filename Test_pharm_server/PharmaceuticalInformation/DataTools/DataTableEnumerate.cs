@@ -11,12 +11,51 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Collections;
 using sld = SLD::System.Linq.Dynamic;
+using System.Data.Linq.Mapping;
+using System.Data.Linq;
 //using  sld = System.Linq.Dynamic;
 
 namespace Test_pharm_server.PharmaceuticalInformation.DataTools
 {
+    public partial class LocalDataContext : DataContext
+    {
+        public LocalDataContext() : base() { };
+
+        [Function(Name = "GetDate", IsComposable = true)]
+        public DateTime GetSystemDate()
+        {
+            MethodInfo mi = MethodBase.GetCurrentMethod() as MethodInfo;
+            return (DateTime)this.ExecuteMethodCall(this, mi, new object[] { }).ReturnValue;
+        }
+    }
+
     public static class DataTableEnumerate
     {
+        public static bool ret_true(this price_list pl)
+        {
+            return pl.Is_deleted;
+        }
+
+        [Function(Name = "GetDate", IsComposable = true)]
+        public static DateTime GetSystemDate()
+        {
+            MethodInfo mi = MethodBase.GetCurrentMethod() as MethodInfo;
+            return (DateTime)this.ExecuteMethodCall(this, mi, new object[] { }).ReturnValue;
+        }
+
+        public static bool JoinDataTableProd(ref DataTable DT_Join, dynamic id, string col_name)
+        {
+            IEnumerable<dynamic> dt_en = DT_Join.AsEnumerable();
+            IEnumerable<dynamic> dt_enw = dt_en.Where(idm => (int)idm.Id_Product == (int)id);
+            return dt_enw.Any();
+            //return true;
+        }
+
+        public static bool JoinDataTable(this DataTable DT_Join, dynamic id, string col_name)
+        {
+            return DT_Join.AsEnumerable().Where(idm => (int) idm.GetType().GetProperty(col_name).GetValue(idm) == (int) id).Any();
+        }
+
         public static void Fill<T> (this IEnumerable<T> Ts, ref DataTable dt) where T : class
         {
             //Get Enumerable Type

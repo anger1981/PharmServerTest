@@ -14,7 +14,9 @@ namespace Test_pharm_server
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Core.Objects;
     using System.Linq;
-    
+    using System.Data.Linq.Mapping;
+    using System.Reflection;
+
     public partial class PhrmInfTESTEntities : DbContext
     {
         public PhrmInfTESTEntities()

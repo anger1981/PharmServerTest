@@ -9,6 +9,8 @@ using Test_pharm_server;
 using System.Linq;
 using EntityFramework.Extensions;
 using Test_pharm_server.PharmaceuticalInformation.DataTools;
+using System.Data.Linq.Mapping;
+using System.Reflection;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -34,8 +36,7 @@ namespace PharmaceuticalInformation.Server
         private SqlDataAdapter FillingOfData;
 
         #endregion
-
-
+        
         #region ' Designer '
 
         public ExportingOfData(string StringOfConnection, string PathToLogFile)
@@ -743,31 +744,29 @@ namespace PharmaceuticalInformation.Server
                     //
                     DataTable IDsOfModifications = Modifications.Tables["IDsOfModifications"].Copy();
                     //
-                    IDsOfModifications.AcceptChanges();
-                    foreach (DataRow CurrentID in IDsOfModifications.Rows)
-                        CurrentID.Delete();
-                    //
-                    SqlCommand CommandOfDeleting = new SqlCommand(
-                        "DELETE FROM ModifiedData WHERE ID = @P1;", ConnectionToBase);
-                    CommandOfDeleting.Parameters.Add("@P1", SqlDbType.Int, 0, "IDOfModification");
-                    //
-                    SqlDataAdapter ClearingData = new SqlDataAdapter();
-                    ClearingData.DeleteCommand = CommandOfDeleting;
-                    //
+                    //IDsOfModifications.AcceptChanges();
+                    //foreach (DataRow CurrentID in IDsOfModifications.Rows)
+                    //    CurrentID.Delete();
+                    ////
+                    //SqlCommand CommandOfDeleting = new SqlCommand(
+                    //    "DELETE FROM ModifiedData WHERE ID = @P1;", ConnectionToBase);
+                    //CommandOfDeleting.Parameters.Add("@P1", SqlDbType.Int, 0, "IDOfModification");
+                    ////
+                    //SqlDataAdapter ClearingData = new SqlDataAdapter();
+                    //ClearingData.DeleteCommand = CommandOfDeleting;
+                    ////
 
 
-
-                    PhrmInf.C__ModifiedData.Where(md => IDsOfModifications.AsEnumerable().Where(idm => (int)idm.IDOfModification == md.ID).Any());   /// JoinDataTable(ref IDsOfModifications, md.ID)).Delete();
-                    try { ClearingData.Update(IDsOfModifications); }
+                    try
+                    {
+                        foreach(DataRow del_row in IDsOfModifications.Rows)
+                            PhrmInf.C__ModifiedData.Where(md => Convert.ToInt32(del_row["IDOfModification"]) == md.ID).Delete();   /// JoinDataTable(ref IDsOfModifications, md.ID)).Delete();                 
+                    }
                     catch (Exception E) 
                     { this.RecordingInLogFile(String.Format("Ошибка при удалении ID изменений: {0}", E.Message)); }
                 }
         }
 
-                    bool JoinDataTable(ref DataTable DT_Mod, int id)
-                    {
-                        return DT_Mod.AsEnumerable().Where(idm => Convert.ToInt32(idm.IDOfModification) == id).Any();
-                    }
 
         #endregion
 
@@ -791,6 +790,9 @@ namespace PharmaceuticalInformation.Server
             //
             // Getting Current Date
             //
+
+            PhrmInf.
+
             SqlCommand GettingData = new SqlCommand("SELECT GetDate() AS 'CurrentDate';", ConnectionToBase);
             GettingData.Connection.Open();
             DateTime CurrentDate = Convert.ToDateTime(GettingData.ExecuteScalar());
