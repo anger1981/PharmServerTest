@@ -159,19 +159,22 @@ namespace PharmaceuticalInformation.Server
             // Date Of Exporting
             bool GettingOfData = false;
             int CountOfExported = 0;
+            DateTime DateOfExported = new DateTime(1947, 07, 02);
+            DateTime LastDateOfExported = new DateTime(1947, 07, 02);
             //
             try
             {
-                SqlCommand GettingData = new SqlCommand("SELECT GetDate() AS 'CurrentDate';", ConnectionToBase);
-                GettingData.Connection.Open();
-                DateTime DateOfExported = Convert.ToDateTime(GettingData.ExecuteScalar());
-                //GettingData.Connection.Close();
-                CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
-                //
-                GettingData.CommandText = "SELECT Value FROM Service WHERE Id_Service = 8;";
+                //SqlCommand GettingData = new SqlCommand("SELECT GetDate() AS 'CurrentDate';", ConnectionToBase);
                 //GettingData.Connection.Open();
-                int NumberOfExported = Convert.ToInt32(GettingData.ExecuteScalar());
-                GettingData.Connection.Close();
+                DateOfExported = LDC.GetSystemDate();  // Convert.ToDateTime(GettingData.ExecuteScalar());
+                LastDateOfExported = PhrmInf.Services.Where(s => s.Id_Service == 8).Select(s => s.Date_Service).Max();
+                //GettingData.Connection.Close();
+                //CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
+                //
+                //GettingData.CommandText = "SELECT Value FROM Service WHERE Id_Service = 8;";
+                //GettingData.Connection.Open();
+                int NumberOfExported = PhrmInf.Services.Where(s => s.Id_Service == 8).Select(s => s.Value).Max(); //Convert.ToInt32(GettingData.ExecuteScalar());
+                //GettingData.Connection.Close();
                 //
                 ExportedDataSet.Tables.Add("DateOfExported");
                 ExportedDataSet.Tables["DateOfExported"].Columns.Add("DateOfExported", typeof(DateTime));
@@ -199,24 +202,95 @@ namespace PharmaceuticalInformation.Server
             //
             if (GettingOfData)
             {
-                for (int i = 0; i <= SchemasOfTables.GetUpperBound(0); i++)
+                DataTable DT_Pharmacy = new DataTable("Pharmacy");
+                DataTable DT_GroupsOfProducts = new DataTable("GroupsOfProducts");
+                DataTable DT_Products = new DataTable("Products");
+                DataTable DT_Announcements = new DataTable("Announcements");
+
+                try
                 {
-                    // Creating Text Of Command
-                    CommandOfSelection.CommandText = SchemasOfTables[i, 1];
-                    //
-                    // Filling
-                    //
-                    try
-                    {
-                        FillingOfData.FillSchema(ExportedDataSet, SchemaType.Source, SchemasOfTables[i, 0]);
-                        CountOfExported += FillingOfData.Fill(ExportedDataSet, SchemasOfTables[i, 0]);
-                    }
-                    catch (Exception E)
-                    {
-                        ReturningMessageAboutError(
-                            String.Format("Ошибка при чтении данных из таблицы {0}", SchemasOfTables[i, 0]), E, false);
-                    }
+                    PhrmInf.Pharmacies.Where(ph => ph.Date_upd >= LastDateOfExported && ph.Date_upd <= DateOfExported)                
+                        .Select(ph => new
+                            {
+                                ID = ph.Id_Pharmacy,
+                                ID_DI = ph.Id_District,
+                                Name = ph.Name_full,
+                                Address = ph.Addr,
+                                Phone = ph.Phone,
+                                Mail = ph.Mail,
+                                Site = ph.Web,
+                                Schedule = ph.Hours,
+                                Transport = ph.Trans,
+                                Deleting = ph.Is_deleted
+                            }).Fill(ref DT_Pharmacy);
                 }
+                catch (Exception E)
+                {
+                    ReturningMessageAboutError(
+                        String.Format("Ошибка при чтении данных из таблицы Pharmacy"), E, false);
+                }
+
+                try
+                {
+                    PhrmInf.Product_group.Where(pg => pg.Date_upd >= LastDateOfExported && pg.Date_upd <= DateOfExported)                
+                        .Select(pg => new
+                            {
+                                ID = pg.Id_product_group,
+                                Name = pg.Name_full,
+                                DateOfUpdating = pg.Date_upd,
+                                Deleting = pg.Is_deleted
+                            }).Fill(ref DT_GroupsOfProducts);
+                }
+                catch (Exception E)
+                {
+                    ReturningMessageAboutError(
+                        String.Format("Ошибка при чтении данных из таблицы Product_group"), E, false);
+                }
+
+                try
+                {
+                    PhrmInf.Products.Where(pr => pr.Date_upd >= LastDateOfExported && pr.Date_upd <= DateOfExported)                
+                        .Select(pr => new
+                            {
+                                ID = pr.Id_Product,
+                                ID_PG = pr.Id_product_group,
+                                Name = pr.Name_full,
+                                Composition = pr.Composition,
+                                Description = pr.Description,
+                                Updating = pr.Date_upd,
+                                Deleting = pr.Is_deleted
+                            }).Fill(ref DT_Products);
+                }
+                catch (Exception E)
+                {
+                    ReturningMessageAboutError(
+                        String.Format("Ошибка при чтении данных из таблицы Product"), E, false);
+                }
+
+                try
+                {
+                    PhrmInf.Announcements.Where(a => a.DateOfUpdating >= LastDateOfExported && a.DateOfUpdating <= DateOfExported)                
+                        .Select(a => new
+                            {
+                                ID_PH = a.ID_PH,
+                                ID = a.ID,
+                                Caption = a.Caption,
+                                Text = a.Text,
+                                Published = a.Published,
+                                DateOfUpdating = a.DateOfUpdating
+                            }).Fill(ref DT_Announcements);
+                }
+                catch (Exception E)
+                {
+                    ReturningMessageAboutError(
+                        String.Format("Ошибка при чтении данных из таблицы Announcement"), E, false);
+                }
+
+                ExportedDataSet.Tables.Add(DT_Pharmacy);
+                ExportedDataSet.Tables.Add(DT_GroupsOfProducts);
+                ExportedDataSet.Tables.Add(DT_Products);
+                ExportedDataSet.Tables.Add(DT_Announcements);
+
                 //
                 /*
                 ExportedDataSet.Tables["CountOfExported"].Rows[0][0] = CountOfExported;
@@ -226,7 +300,7 @@ namespace PharmaceuticalInformation.Server
             //
             // Return
             //
-            return ExportedDataSet;
+                return ExportedDataSet;
         }
 
         public bool UpdatingDateOfExporting(DateTime DateOfExported)
@@ -1068,6 +1142,7 @@ namespace PharmaceuticalInformation.Server
             // Initializing Of Variables
             //
             bool SuccessfulFilling = true;
+            DateTime MaxDateService = PhrmInf.Services.Where(s => s.Id_Service == 10).Select(s => s.Date_Service).Max();
             //
             DataTable InformationOfExporting = new DataTable("InformationOfExporting");
             InformationOfExporting.Columns.Add("Key", typeof(string));
@@ -1076,36 +1151,49 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable PricesForExporting = new DataTable("PricesForExporting");
             DataTable DatesForExporting = new DataTable("DatesForExporting");
+
+            //IEnumerable<object> InqOfPrices = 
+            
             //
             // Creating Texts Of Inquiries
             //
-            string TextOfInquiryOfPrices =
-                "SELECT Id_Pharmacy AS 'ID_PH', Id_Product AS 'ID_PR', Price AS 'Price', Date_upd AS 'Updating', " +
-                "Is_privilege AS 'Preferential', Is_deleted AS 'Deleting' " + 
-                "FROM Price_List " +
-                "WHERE Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1;";
-            //
-            string TextOfInquiryOfDates = 
-                "SELECT RIPL.ID_PH AS 'ID', HR.DateOfReception AS 'Date' " + 
-                "FROM HistoryOfReceptions AS HR, ReportsOfImportingOfPriceLists AS RIPL " + 
-                "WHERE ((HR.DateOfReception BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1) AND " + 
-                "(HR.ID = RIPL.ID_HR) AND (RIPL.FullPriceList = 1) AND " + 
-                "((RIPL.CountNotConfirmed + RIPL.CountOfAdditions + RIPL.CountOfChanges + RIPL.CountOfDeletings) > 0));";
+            //string TextOfInquiryOfPrices =
+            //    "SELECT Id_Pharmacy AS 'ID_PH', Id_Product AS 'ID_PR', Price AS 'Price', Date_upd AS 'Updating', " +
+            //    "Is_privilege AS 'Preferential', Is_deleted AS 'Deleting' " + 
+            //    "FROM Price_List " +
+            //    "WHERE Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1;";
+            ////
+            //string TextOfInquiryOfDates = 
+            //    "SELECT RIPL.ID_PH AS 'ID', HR.DateOfReception AS 'Date' " + 
+            //    "FROM HistoryOfReceptions AS HR, ReportsOfImportingOfPriceLists AS RIPL " + 
+            //    "WHERE ((HR.DateOfReception BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 10) AND @P1) AND " + 
+            //    "(HR.ID = RIPL.ID_HR) AND (RIPL.FullPriceList = 1) AND " + 
+            //    "((RIPL.CountNotConfirmed + RIPL.CountOfAdditions + RIPL.CountOfChanges + RIPL.CountOfDeletings) > 0));";
             //
             // Creating DataAdapter For Filling
             //
-            SqlCommand CommandOfSelection = new SqlCommand("", ConnectionToBase);
-            CommandOfSelection.Parameters.Add("@P1", SqlDbType.DateTime);
-            CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
-            SqlDataAdapter FillingWithData = new SqlDataAdapter(CommandOfSelection);
+            //SqlCommand CommandOfSelection = new SqlCommand("", ConnectionToBase);
+            //CommandOfSelection.Parameters.Add("@P1", SqlDbType.DateTime);
+            //CommandOfSelection.Parameters["@P1"].Value = DateOfExported;
+            //SqlDataAdapter FillingWithData = new SqlDataAdapter(CommandOfSelection);
             //
             // Filling Of Data
             //
             try
             {
-                CommandOfSelection.CommandText = TextOfInquiryOfPrices;
-                FillingWithData.FillSchema(PricesForExporting, SchemaType.Source);
-                FillingWithData.Fill(PricesForExporting);
+                PhrmInf.price_list.Where(p => p.Date_upd >= MaxDateService && p.Date_upd <= DateOfExported)
+                    .Select(p => new
+                        {
+                            ID_PH = p.Id_Pharmacy,
+                            ID_PR = p.Id_Product,
+                            Price = p.Price,
+                            Updating = p.Date_upd,
+                            Preferential = p.Is_privilege,
+                            Deleting = p.Is_deleted
+                        }).Fill(ref PricesForExporting);
+                //CommandOfSelection.CommandText = TextOfInquiryOfPrices;
+                //FillingWithData.FillSchema(PricesForExporting, SchemaType.Source);
+                //FillingWithData.Fill(PricesForExporting);
             }
             catch (Exception E)
             {
@@ -1115,10 +1203,18 @@ namespace PharmaceuticalInformation.Server
             }
             //
             try
-            {
-                CommandOfSelection.CommandText = TextOfInquiryOfDates;
-                FillingWithData.FillSchema(DatesForExporting, SchemaType.Source);
-                FillingWithData.Fill(DatesForExporting);
+            {                
+                PhrmInf.HistoryOfReceptions.Where(hr => hr.DateOfReception >= MaxDateService && hr.DateOfReception <= DateOfExported)
+                    .Join
+                    (
+                        PhrmInf.ReportsOfImportingOfPriceLists
+                        .Where(ripl => ripl.FullPriceList && ((ripl.CountNotConfirmed + ripl.CountOfAdditions + ripl.CountOfChanges + ripl.CountOfDeletings) > 0))
+                        , hr => hr.ID, ripl => ripl.ID_HR 
+                        , (hr, ripl) => new { ID =  ripl.ID_PH, Date = hr.DateOfReception}
+                    ).Fill(ref DatesForExporting); 
+                //CommandOfSelection.CommandText = TextOfInquiryOfDates;
+                //FillingWithData.FillSchema(DatesForExporting, SchemaType.Source);
+                //FillingWithData.Fill(DatesForExporting);
             }
             catch (Exception E)
             {
@@ -1144,9 +1240,9 @@ namespace PharmaceuticalInformation.Server
                 InformationOfExporting.Rows.Add("CountOfFullDates", DatesForExporting.Rows.Count);
                 //
                 ConnectionToBase.Open();
-                InformationOfExporting.Rows.Add("DateOfStart", 
-                    new SqlCommand("SELECT Date_Service FROM Service WHERE Id_Service = 10", ConnectionToBase).ExecuteScalar());
-                ConnectionToBase.Close();
+                InformationOfExporting.Rows.Add("DateOfStart", MaxDateService);
+                //   new SqlCommand("SELECT Date_Service FROM Service WHERE Id_Service = 10", ConnectionToBase).ExecuteScalar());
+                //ConnectionToBase.Close();
                 InformationOfExporting.Rows.Add("DateOfEnd", DateOfExported);
             }
             //
@@ -1891,19 +1987,34 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            string NameOfTable = "Drugstores";
-            string TextOfInquiry = 
-                "SELECT Id_Pharmacy AS 'ID', Id_District AS 'ID_DI', Name_full AS 'Name', Addr AS 'Address', Phone AS 'Phone', Mail AS 'Mail', Web AS 'Site', Hours AS 'Schedule', Trans AS 'Transport', Is_deleted AS 'Deleting' " + 
-                "FROM Pharmacy " + 
-                "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
+            //string NameOfTable = "Drugstores";
+            //string TextOfInquiry = 
+            //    "SELECT Id_Pharmacy AS 'ID', Id_District AS 'ID_DI', Name_full AS 'Name', Addr AS 'Address', Phone AS 'Phone', Mail AS 'Mail', Web AS 'Site', Hours AS 'Schedule', Trans AS 'Transport', Is_deleted AS 'Deleting' " + 
+            //    "FROM Pharmacy " + 
+            //    "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
             //
             // Getting Modifications Of Data
             //
             DataTable ModifiedData = new DataTable("Drugstores");
+
+            PhrmInf.Pharmacies.Where(ph => ph.Date_upd >= DateOfStartingModification && ph.Date_upd <= DateOfEndingModification)
+                .Select(ph => new
+                {
+                    ID = ph.Id_Pharmacy,
+                    ID_DI = ph.Id_District,
+                    Name = ph.Name_full,
+                    Address = ph.Addr,
+                    Phone = ph.Phone,
+                    Mail = ph.Mail,
+                    Site = ph.Web,
+                    Schedule = ph.Hours,
+                    Transport = ph.Trans,
+                    Deleting = ph.Is_deleted
+                }).Fill(ref ModifiedData);
             //
-            ModifiedData = 
-                GettingModificationsOfData(
-                NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
+            //ModifiedData = 
+            //    GettingModificationsOfData(
+            //    NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
             //
             // Return
             //
@@ -1917,19 +2028,28 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            string NameOfTable = "GroupsOfProducts";
-            string TextOfInquiry = 
-                "SELECT Id_product_group AS 'ID', Name_full AS 'Name', Date_upd AS 'DateOfUpdating', Is_deleted AS 'Deleting' " + 
-                "FROM Product_Group " + 
-                "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
+            //string NameOfTable = "GroupsOfProducts";
+            //string TextOfInquiry = 
+            //    "SELECT Id_product_group AS 'ID', Name_full AS 'Name', Date_upd AS 'DateOfUpdating', Is_deleted AS 'Deleting' " + 
+            //    "FROM Product_Group " + 
+            //    "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
             //
             // Getting Modifications Of Data
             //
             DataTable ModifiedData = new DataTable("GroupsOfProducts");
+
+            PhrmInf.Product_group.Where(pg => pg.Date_upd >= DateOfStartingModification && pg.Date_upd <= DateOfEndingModification)
+                .Select(pg => new
+                {
+                    ID = pg.Id_product_group,
+                    Name = pg.Name_full,
+                    DateOfUpdating = pg.Date_upd,
+                    Deleting = pg.Is_deleted
+                }).Fill(ref ModifiedData);
             //
-            ModifiedData = 
-                GettingModificationsOfData(
-                NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
+            //ModifiedData = 
+            //    GettingModificationsOfData(
+            //    NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
             //
             // Return
             //
@@ -1943,19 +2063,31 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            string NameOfTable = "Products";
-            string TextOfInquiry = 
-                "SELECT Id_Product AS 'ID', Id_product_group AS 'ID_PG', Name_full AS 'Name', Composition AS 'Composition', Description AS 'Description', Date_upd AS 'Updating', Is_deleted AS 'Deleting' " + 
-                "FROM Product " + 
-                "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
+            //string NameOfTable = "Products";
+            //string TextOfInquiry = 
+            //    "SELECT Id_Product AS 'ID', Id_product_group AS 'ID_PG', Name_full AS 'Name', Composition AS 'Composition', Description AS 'Description', Date_upd AS 'Updating', Is_deleted AS 'Deleting' " + 
+            //    "FROM Product " + 
+            //    "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
             //
             // Getting Modifications Of Data
             //
             DataTable ModifiedData = new DataTable("Products");
+
+            PhrmInf.Products.Where(pr => pr.Date_upd >= DateOfStartingModification && pr.Date_upd <= DateOfEndingModification)
+                .Select(pr => new
+                {
+                    ID = pr.Id_Product,
+                    ID_PG = pr.Id_product_group,
+                    Name = pr.Name_full,
+                    Composition = pr.Composition,
+                    Description = pr.Description,
+                    Updating = pr.Date_upd,
+                    Deleting = pr.Is_deleted
+                }).Fill(ref ModifiedData);
             //
-            ModifiedData = 
-                GettingModificationsOfData(
-                NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
+            //ModifiedData = 
+            //    GettingModificationsOfData(
+            //    NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
             //
             // Return
             //
@@ -1969,20 +2101,31 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            string NameOfTable = "PriceLists";
-            string TextOfInquiry = 
-                "SELECT Id_Pharmacy AS 'ID_PH', Id_Product AS 'ID_PR', Price AS 'Price', Date_upd AS 'Updating', " + 
-                "Is_privilege AS 'Preferential', Is_deleted AS 'Deleting' " + 
-                "FROM Price_List " + 
-                "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
+            //string NameOfTable = "PriceLists";
+            //string TextOfInquiry = 
+            //    "SELECT Id_Pharmacy AS 'ID_PH', Id_Product AS 'ID_PR', Price AS 'Price', Date_upd AS 'Updating', " + 
+            //    "Is_privilege AS 'Preferential', Is_deleted AS 'Deleting' " + 
+            //    "FROM Price_List " + 
+            //    "WHERE (Date_upd BETWEEN @DateOfStarting AND @DateOfEnding);";
             //
             // Getting Modifications Of Data
             //
             DataTable ModifiedData = new DataTable("PriceLists");
+
+            PhrmInf.price_list.Where(pl => pl.Date_upd >= DateOfStartingModification && pl.Date_upd <= DateOfEndingModification)
+                .Select(pl => new
+                {
+                    ID_PH = pl.Id_Pharmacy,
+                    ID_PR = pl.Id_Product,
+                    Price = pl.Price,
+                    Updating = pl.Date_upd,
+                    Preferential = pl.Is_privilege,
+                    Deleting = pl.Is_deleted
+                }).Fill(ref ModifiedData);
             //
-            ModifiedData = 
-                GettingModificationsOfData(
-                NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
+            //ModifiedData = 
+            //    GettingModificationsOfData(
+            //    NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
             //
             // Return
             //
@@ -1996,21 +2139,29 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            string NameOfTable = "DatesOfPriceLists";
-            string TextOfInquiry = 
-                "SELECT RIPL.ID_PH AS 'ID', HR.DateOfReception AS 'Date' " + 
-                "FROM HistoryOfReceptions AS HR, ReportsOfImportingOfPriceLists AS RIPL " + 
-                "WHERE ((HR.DateOfReception BETWEEN @DateOfStarting AND @DateOfEnding) AND " + 
-                "(HR.ID = RIPL.ID_HR) AND (RIPL.FullPriceList = 1) AND " + 
-                "((RIPL.CountNotConfirmed + RIPL.CountOfAdditions + RIPL.CountOfChanges + RIPL.CountOfDeletings) > 0));";
+            //string NameOfTable = "DatesOfPriceLists";
+            //string TextOfInquiry = 
+            //    "SELECT RIPL.ID_PH AS 'ID', HR.DateOfReception AS 'Date' " + 
+            //    "FROM HistoryOfReceptions AS HR, ReportsOfImportingOfPriceLists AS RIPL " + 
+            //    "WHERE ((HR.DateOfReception BETWEEN @DateOfStarting AND @DateOfEnding) AND " + 
+            //    "(HR.ID = RIPL.ID_HR) AND (RIPL.FullPriceList = 1) AND " + 
+            //    "((RIPL.CountNotConfirmed + RIPL.CountOfAdditions + RIPL.CountOfChanges + RIPL.CountOfDeletings) > 0));";
             //
             // Getting Modifications Of Data
             //
             DataTable ModifiedData = new DataTable("DatesOfPriceLists");
+
+            PhrmInf.HistoryOfReceptions.Where(hr => hr.DateOfReception >= DateOfStartingModification && hr.DateOfReception <= DateOfEndingModification)
+                .Join(PhrmInf.ReportsOfImportingOfPriceLists
+                .Where(ripl => ripl.FullPriceList && ((ripl.CountNotConfirmed + ripl.CountOfAdditions + ripl.CountOfChanges + ripl.CountOfDeletings) > 0))
+                , hr => hr.ID
+                , ripl => ripl.ID_HR
+                , (hr, ripl) => new { ID = ripl.ID_PH, Date = hr.DateOfReception }).Fill(ref ModifiedData);
+               
             //
-            ModifiedData = 
-                GettingModificationsOfData(
-                NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
+            //ModifiedData = 
+            //    GettingModificationsOfData(
+            //    NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
             //
             // Return
             //
@@ -2024,62 +2175,73 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            string NameOfTable = "CountOfExported"; // Announcements
-            string TextOfInquiry = 
-                "SELECT ID_PH AS 'ID_PH', ID AS 'ID', Caption AS 'Caption', [Text] AS 'Text', Published AS 'Published', DateOfUpdating AS 'DateOfUpdating' " + 
-                "FROM Announcements " + 
-                "WHERE (DateOfUpdating BETWEEN @DateOfStarting AND @DateOfEnding);";
+            //string NameOfTable = "CountOfExported"; // Announcements
+            //string TextOfInquiry = 
+            //    "SELECT ID_PH AS 'ID_PH', ID AS 'ID', Caption AS 'Caption', [Text] AS 'Text', Published AS 'Published', DateOfUpdating AS 'DateOfUpdating' " + 
+            //    "FROM Announcements " + 
+            //    "WHERE (DateOfUpdating BETWEEN @DateOfStarting AND @DateOfEnding);";
             //
             // Getting Modifications Of Data
             //
             DataTable ModifiedData = new DataTable("CountOfExported"); // Announcements
+
+            PhrmInf.Announcements.Where(a => a.DateOfUpdating >= DateOfStartingModification && a.DateOfUpdating <= DateOfEndingModification)
+                .Select(a => new
+                {
+                    ID_PH = a.ID_PH,
+                    ID = a.ID,
+                    Caption = a.Caption,
+                    Text = a.Text,
+                    Published = a.Published,
+                    DateOfUpdating = a.DateOfUpdating
+                }).Fill(ref ModifiedData);
             //
-            ModifiedData = 
-                GettingModificationsOfData(
-                NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
+            //ModifiedData = 
+            //    GettingModificationsOfData(
+            //    NameOfTable, TextOfInquiry, DateOfStartingModification, DateOfEndingModification);
             //
             // Return
             //
             return ModifiedData;
         }
 
-        private DataTable GettingModificationsOfData(
-            string NameOfTable,
-            string TextOfInquiry,
-            DateTime DateOfStartingModification,
-            DateTime DateOfEndingModification)
-        {
-            //
-            DataTable ModifiedData = new DataTable(NameOfTable);
-            //
-            // Creating Getting Modifications
-            //
-            SqlCommand SelectionOfData = new SqlCommand(TextOfInquiry, ConnectionToBase);
-            //
-            SelectionOfData.Parameters.Add("@DateOfStarting", SqlDbType.DateTime);
-            SelectionOfData.Parameters.Add("@DateOfEnding", SqlDbType.DateTime);
-            SelectionOfData.Parameters["@DateOfStarting"].Value = DateOfStartingModification;
-            SelectionOfData.Parameters["@DateOfEnding"].Value = DateOfEndingModification;
-            //
-            SqlDataAdapter FillingWithData = new SqlDataAdapter(SelectionOfData);
-            //
-            // Filling With Data
-            //
-            try
-            {
-                FillingWithData.FillSchema(ModifiedData, SchemaType.Source);
-                FillingWithData.Fill(ModifiedData);
-            }
-            catch (Exception E)
-            {
-                RecordingInLogFile(
-                  String.Format("ERROR Ошибка при заполнении таблицы {0}: {1}", NameOfTable, E.Message));
-            }
-            //
-            // Return
-            //
-            return ModifiedData;
-        }
+        //private DataTable GettingModificationsOfData(
+        //    string NameOfTable,
+        //    string TextOfInquiry,
+        //    DateTime DateOfStartingModification,
+        //    DateTime DateOfEndingModification)
+        //{
+        //    //
+        //    DataTable ModifiedData = new DataTable(NameOfTable);
+        //    //
+        //    // Creating Getting Modifications
+        //    //
+        //    SqlCommand SelectionOfData = new SqlCommand(TextOfInquiry, ConnectionToBase);
+        //    //
+        //    SelectionOfData.Parameters.Add("@DateOfStarting", SqlDbType.DateTime);
+        //    SelectionOfData.Parameters.Add("@DateOfEnding", SqlDbType.DateTime);
+        //    SelectionOfData.Parameters["@DateOfStarting"].Value = DateOfStartingModification;
+        //    SelectionOfData.Parameters["@DateOfEnding"].Value = DateOfEndingModification;
+        //    //
+        //    SqlDataAdapter FillingWithData = new SqlDataAdapter(SelectionOfData);
+        //    //
+        //    // Filling With Data
+        //    //
+        //    try
+        //    {
+        //        FillingWithData.FillSchema(ModifiedData, SchemaType.Source);
+        //        FillingWithData.Fill(ModifiedData);
+        //    }
+        //    catch (Exception E)
+        //    {
+        //        RecordingInLogFile(
+        //          String.Format("ERROR Ошибка при заполнении таблицы {0}: {1}", NameOfTable, E.Message));
+        //    }
+        //    //
+        //    // Return
+        //    //
+        //    return ModifiedData;
+        //}
 
         #endregion
 
@@ -2094,25 +2256,25 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            SqlCommand GettingData = new SqlCommand("SELECT GetDate() AS 'CurrentDate';", ConnectionToBase);
+            //SqlCommand GettingData = new SqlCommand("SELECT GetDate() AS 'CurrentDate';", ConnectionToBase);
             //
             // Getting Current Date
             //
             try
             {
                 //
-                GettingData.Connection.Open();
+                //GettingData.Connection.Open();
                 //
-                CurrentDateOfStorage = Convert.ToDateTime(GettingData.ExecuteScalar());
+                CurrentDateOfStorage = LDC.GetSystemDate(); // Convert.ToDateTime(GettingData.ExecuteScalar());
                 //
-                GettingData.Connection.Close();
+                //GettingData.Connection.Close();
             }
             catch (Exception E)
             {
                 //
-                try { GettingData.Connection.Close(); }
-                catch (Exception E2)
-                { this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
+                //try { GettingData.Connection.Close(); }
+                //catch (Exception E2)
+                //{ this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
                 //
                 CurrentDateOfStorage = new DateTime(1947, 07, 02);
                 //
@@ -2133,29 +2295,29 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            SqlCommand SelectionOfDate = 
-                new SqlCommand("SELECT Date_Service FROM Service WHERE Id_Service = @ID;", ConnectionToBase);
-            //
-            SelectionOfDate.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
-            SelectionOfDate.Parameters["@ID"].Value = IDOfDate;
+            //SqlCommand SelectionOfDate = 
+            //    new SqlCommand("SELECT Date_Service FROM Service WHERE Id_Service = @ID;", ConnectionToBase);
+            ////
+            //SelectionOfDate.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
+            //SelectionOfDate.Parameters["@ID"].Value = IDOfDate;
             //
             // Getting Date
             //
             try
             {
                 //
-                SelectionOfDate.Connection.Open();
+                //SelectionOfDate.Connection.Open();
                 //
-                ReturnedDate = Convert.ToDateTime(SelectionOfDate.ExecuteScalar());
+                ReturnedDate = PhrmInf.Services.Where(s => s.Id_Service == IDOfDate).Select(s => s.Date_Service).Max(); //Convert.ToDateTime(SelectionOfDate.ExecuteScalar());
                 //
-                SelectionOfDate.Connection.Close();
+                //SelectionOfDate.Connection.Close();
             }
             catch (Exception E)
             {
                 //
-                try { SelectionOfDate.Connection.Close(); }
-                catch (Exception E2)
-                { this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
+                //try { SelectionOfDate.Connection.Close(); }
+                //catch (Exception E2)
+                //{ this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
                 //
                 ReturnedDate = new DateTime(1947, 07, 02);
                 //
@@ -2176,29 +2338,29 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Getting
             //
-            SqlCommand SelectionOfDate = 
-                new SqlCommand("SELECT Value FROM Service WHERE Id_Service = @ID;", ConnectionToBase);
-            //
-            SelectionOfDate.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
-            SelectionOfDate.Parameters["@ID"].Value = ReturnedNumber;
+            //SqlCommand SelectionOfDate = 
+            //    new SqlCommand("SELECT Value FROM Service WHERE Id_Service = @ID;", ConnectionToBase);
+            ////
+            //SelectionOfDate.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
+            //SelectionOfDate.Parameters["@ID"].Value = ReturnedNumber;
             //
             // Getting Date
             //
             try
             {
                 //
-                SelectionOfDate.Connection.Open();
+                //SelectionOfDate.Connection.Open();
                 //
-                ReturnedNumber = Convert.ToInt32(SelectionOfDate.ExecuteScalar());
+                ReturnedNumber = PhrmInf.Services.Where(s => s.Id_Service == IDOfNumber).Select(s => s.Value).Max();  //Convert.ToInt32(SelectionOfDate.ExecuteScalar());
                 //
-                SelectionOfDate.Connection.Close();
+                //SelectionOfDate.Connection.Close();
             }
             catch (Exception E)
             {
                 //
-                try { SelectionOfDate.Connection.Close(); }
-                catch (Exception E2)
-                { this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
+                //try { SelectionOfDate.Connection.Close(); }
+                //catch (Exception E2)
+                //{ this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
                 //
                 ReturnedNumber = 0;
                 //
@@ -2217,32 +2379,33 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Updating
             //
-            SqlCommand CommandOfUpdatingNumber = new SqlCommand(
-                "UPDATE Service SET Value = @Value WHERE Id_Service = @ID;", ConnectionToBase);
-            //
-            CommandOfUpdatingNumber.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
-            CommandOfUpdatingNumber.Parameters["@ID"].Value = IDOfNumber;
-            //
-            CommandOfUpdatingNumber.Parameters.Add(new SqlParameter("@Value", SqlDbType.Int));
-            CommandOfUpdatingNumber.Parameters["@Value"].Value = NewNumber;
+            //SqlCommand CommandOfUpdatingNumber = new SqlCommand(
+            //    "UPDATE Service SET Value = @Value WHERE Id_Service = @ID;", ConnectionToBase);
+            ////
+            //CommandOfUpdatingNumber.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
+            //CommandOfUpdatingNumber.Parameters["@ID"].Value = IDOfNumber;
+            ////
+            //CommandOfUpdatingNumber.Parameters.Add(new SqlParameter("@Value", SqlDbType.Int));
+            //CommandOfUpdatingNumber.Parameters["@Value"].Value = NewNumber;
             //
             // Updating Date
             //
             try
             {
-                //
-                CommandOfUpdatingNumber.Connection.Open();
-                //
-                CommandOfUpdatingNumber.ExecuteNonQuery();
-                //
-                CommandOfUpdatingNumber.Connection.Close();
+                PhrmInf.Services.Where(s => s.Id_Service == IDOfNumber).Update(s => new Test_pharm_server.Service { Value = NewNumber });
+                ////
+                //CommandOfUpdatingNumber.Connection.Open();
+                ////
+                //CommandOfUpdatingNumber.ExecuteNonQuery();
+                ////
+                //CommandOfUpdatingNumber.Connection.Close();
             }
             catch (Exception E)
             {
                 //
-                try { CommandOfUpdatingNumber.Connection.Close(); }
-                catch (Exception E2)
-                { this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
+                //try { CommandOfUpdatingNumber.Connection.Close(); }
+                //catch (Exception E2)
+                //{ this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
                 //
                 this.RecordingInLogFile(
                     String.Format("ERROR Ошибка при обновлении номера: {0}", E.Message));
@@ -2255,32 +2418,33 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Updating
             //
-            SqlCommand CommandOfUpdatingDate = new SqlCommand(
-                "UPDATE Service SET Date_Service = @Date WHERE Id_Service = @ID;", ConnectionToBase);
-            //
-            CommandOfUpdatingDate.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
-            CommandOfUpdatingDate.Parameters["@ID"].Value = IDOfDate;
-            //
-            CommandOfUpdatingDate.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime));
-            CommandOfUpdatingDate.Parameters["@Date"].Value = NewDate;
+            //SqlCommand CommandOfUpdatingDate = new SqlCommand(
+            //    "UPDATE Service SET Date_Service = @Date WHERE Id_Service = @ID;", ConnectionToBase);
+            ////
+            //CommandOfUpdatingDate.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
+            //CommandOfUpdatingDate.Parameters["@ID"].Value = IDOfDate;
+            ////
+            //CommandOfUpdatingDate.Parameters.Add(new SqlParameter("@Date", SqlDbType.DateTime));
+            //CommandOfUpdatingDate.Parameters["@Date"].Value = NewDate;
             //
             // Updating Date
             //
             try
             {
+                PhrmInf.Services.Where(s => s.Id_Service == IDOfDate).Update(s => new Test_pharm_server.Service { Date_Service = NewDate });
                 //
-                CommandOfUpdatingDate.Connection.Open();
-                //
-                CommandOfUpdatingDate.ExecuteNonQuery();
-                //
-                CommandOfUpdatingDate.Connection.Close();
+                //CommandOfUpdatingDate.Connection.Open();
+                ////
+                //CommandOfUpdatingDate.ExecuteNonQuery();
+                ////
+                //CommandOfUpdatingDate.Connection.Close();
             }
             catch (Exception E)
             {
                 //
-                try { CommandOfUpdatingDate.Connection.Close(); }
-                catch (Exception E2)
-                { this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
+                //try { CommandOfUpdatingDate.Connection.Close(); }
+                //catch (Exception E2)
+                //{ this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
                 //
                 this.RecordingInLogFile(
                     String.Format("ERROR Ошибка при обновлении даты: {0}", E.Message));
@@ -2293,29 +2457,30 @@ namespace PharmaceuticalInformation.Server
             //
             // Creating Increment
             //
-            SqlCommand CommandOfUpdatingNumber = new SqlCommand(
-                    "UPDATE Service SET Value = Value + 1 WHERE Id_Service = @ID;", ConnectionToBase);
-            //
-            CommandOfUpdatingNumber.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
-            CommandOfUpdatingNumber.Parameters["@ID"].Value = IDOfNumber;
+            //SqlCommand CommandOfUpdatingNumber = new SqlCommand(
+            //        "UPDATE Service SET Value = Value + 1 WHERE Id_Service = @ID;", ConnectionToBase);
+            ////
+            //CommandOfUpdatingNumber.Parameters.Add(new SqlParameter("@ID", SqlDbType.Int));
+            //CommandOfUpdatingNumber.Parameters["@ID"].Value = IDOfNumber;
             //
             // Increment Number
             //
             try
             {
-                //
-                CommandOfUpdatingNumber.Connection.Open();
-                //
-                CommandOfUpdatingNumber.ExecuteNonQuery();
-                //
-                CommandOfUpdatingNumber.Connection.Close();
+                PhrmInf.Services.Where(s => s.Id_Service == IDOfNumber).Update(s => new Test_pharm_server.Service { Value = s.Value + 1 });
+                ////
+                //CommandOfUpdatingNumber.Connection.Open();
+                ////
+                //CommandOfUpdatingNumber.ExecuteNonQuery();
+                ////
+                //CommandOfUpdatingNumber.Connection.Close();
             }
             catch (Exception E)
             {
                 //
-                try { CommandOfUpdatingNumber.Connection.Close(); }
-                catch (Exception E2)
-                { this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
+                //try { CommandOfUpdatingNumber.Connection.Close(); }
+                //catch (Exception E2)
+                //{ this.RecordingInLogFile(String.Format("ERROR Ошибка при закрытии подключения: {0}", E2.Message)); }
                 //
                 this.RecordingInLogFile(
                     String.Format("ERROR Ошибка при приращении номера: {0}", E.Message));
