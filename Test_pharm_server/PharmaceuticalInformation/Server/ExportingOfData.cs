@@ -101,57 +101,57 @@ namespace PharmaceuticalInformation.Server
             //
             // Selections For Exporting Data
             //
-            string[,] SchemasOfTables = new string[4,2]
-            { 
-              {
-                  "Pharmacy", 
-                  "SELECT Id_Pharmacy AS 'ID', Id_District AS 'ID_DI', Name_full AS 'Name', Addr AS 'Address', Phone AS 'Phone', Mail AS 'Mail', Web AS 'Site', Hours AS 'Schedule', Trans AS 'Transport', Is_deleted AS 'Deleting' " + 
-                  "FROM Pharmacy " + 
-                  "WHERE (Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1); "
-              },
-              {
-                  "GroupsOfProducts", 
-                  "SELECT Id_product_group AS 'ID', Name_full AS 'Name', Date_upd AS 'DateOfUpdating', Is_deleted AS 'Deleting' " + 
-                  "FROM product_group " + 
-                  "WHERE (Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1); "
-              },
-              {
-                  "Products", 
-                  "SELECT Id_Product AS 'ID', Id_product_group AS 'ID_PG', Name_full AS 'Name', Composition AS 'Composition', Description AS 'Description', Date_upd AS 'Updating', Is_deleted AS 'Deleting' " + 
-                  "FROM Product " + 
-                  "WHERE (Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1); "
-              },
-              /*{
-                  "PriceList",
-                  "SELECT Id_Pharmacy AS 'ID_PH', ID_Product AS 'ID_PR', Price AS 'Price', Date_upd AS 'Updating', Is_privilege AS 'Preferential', Is_deleted AS 'Deleting' " + 
-                  "FROM Price_List " + 
-                  "WHERE ((Id_Pharmacy IN (SELECT Id_Pharmacy FROM Pharmacy WHERE Is_deleted = 0)) AND " + 
-                  "(Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1)); "
-              },*/
-              /*{
-                  "FullUpdatingOfDates",
-                  "SELECT RIPL.ID_PH AS 'ID', HR.DateOfReception AS 'Date' " + 
-                  "FROM HistoryOfReceptions AS HR, ReportsOfImportingOfPriceLists AS RIPL " + 
-                  "WHERE ((HR.DateOfReception " + 
-                  "BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1) AND " + 
-                  "(HR.ID = RIPL.ID_HR) AND (RIPL.FullPriceList = 1) AND " + 
-                  "((RIPL.CountNotConfirmed + RIPL.CountOfAdditions + " + 
-                  "RIPL.CountOfChanges + RIPL.CountOfDeletings) > 0)); "
-              },*/
-              /*
-              {
-                  "CountOfExported", 
-                  "SELECT ID_PH AS 'ID_PH', ID AS 'ID', Caption AS 'Caption', [Text] AS 'Text', Published AS 'Published', DateOfUpdating AS 'DateOfUpdating' " + 
-                  "FROM Announcements " + 
-                  "WHERE (DateOfUpdating BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND GetDate());"
-              }*/
-              {
-                  "Announcements", 
-                  "SELECT ID_PH AS 'ID_PH', ID AS 'ID', Caption AS 'Caption', [Text] AS 'Text', Published AS 'Published', DateOfUpdating AS 'DateOfUpdating' " + 
-                  "FROM Announcements " + 
-                  "WHERE (DateOfUpdating BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND GetDate());"
-              }
-            };
+            //string[,] SchemasOfTables = new string[4,2]
+            //{ 
+            //  {
+            //      "Pharmacy", 
+            //      "SELECT Id_Pharmacy AS 'ID', Id_District AS 'ID_DI', Name_full AS 'Name', Addr AS 'Address', Phone AS 'Phone', Mail AS 'Mail', Web AS 'Site', Hours AS 'Schedule', Trans AS 'Transport', Is_deleted AS 'Deleting' " + 
+            //      "FROM Pharmacy " + 
+            //      "WHERE (Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1); "
+            //  },
+            //  {
+            //      "GroupsOfProducts", 
+            //      "SELECT Id_product_group AS 'ID', Name_full AS 'Name', Date_upd AS 'DateOfUpdating', Is_deleted AS 'Deleting' " + 
+            //      "FROM product_group " + 
+            //      "WHERE (Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1); "
+            //  },
+            //  {
+            //      "Products", 
+            //      "SELECT Id_Product AS 'ID', Id_product_group AS 'ID_PG', Name_full AS 'Name', Composition AS 'Composition', Description AS 'Description', Date_upd AS 'Updating', Is_deleted AS 'Deleting' " + 
+            //      "FROM Product " + 
+            //      "WHERE (Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1); "
+            //  },
+            //  /*{
+            //      "PriceList",
+            //      "SELECT Id_Pharmacy AS 'ID_PH', ID_Product AS 'ID_PR', Price AS 'Price', Date_upd AS 'Updating', Is_privilege AS 'Preferential', Is_deleted AS 'Deleting' " + 
+            //      "FROM Price_List " + 
+            //      "WHERE ((Id_Pharmacy IN (SELECT Id_Pharmacy FROM Pharmacy WHERE Is_deleted = 0)) AND " + 
+            //      "(Date_upd BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1)); "
+            //  },*/
+            //  /*{
+            //      "FullUpdatingOfDates",
+            //      "SELECT RIPL.ID_PH AS 'ID', HR.DateOfReception AS 'Date' " + 
+            //      "FROM HistoryOfReceptions AS HR, ReportsOfImportingOfPriceLists AS RIPL " + 
+            //      "WHERE ((HR.DateOfReception " + 
+            //      "BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND @P1) AND " + 
+            //      "(HR.ID = RIPL.ID_HR) AND (RIPL.FullPriceList = 1) AND " + 
+            //      "((RIPL.CountNotConfirmed + RIPL.CountOfAdditions + " + 
+            //      "RIPL.CountOfChanges + RIPL.CountOfDeletings) > 0)); "
+            //  },*/
+            //  /*
+            //  {
+            //      "CountOfExported", 
+            //      "SELECT ID_PH AS 'ID_PH', ID AS 'ID', Caption AS 'Caption', [Text] AS 'Text', Published AS 'Published', DateOfUpdating AS 'DateOfUpdating' " + 
+            //      "FROM Announcements " + 
+            //      "WHERE (DateOfUpdating BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND GetDate());"
+            //  }*/
+            //  {
+            //      "Announcements", 
+            //      "SELECT ID_PH AS 'ID_PH', ID AS 'ID', Caption AS 'Caption', [Text] AS 'Text', Published AS 'Published', DateOfUpdating AS 'DateOfUpdating' " + 
+            //      "FROM Announcements " + 
+            //      "WHERE (DateOfUpdating BETWEEN (SELECT Date_Service FROM Service WHERE Id_Service = 8) AND GetDate());"
+            //  }
+            //};
             //
             // Announcements
             // CountOfExported
@@ -719,97 +719,97 @@ namespace PharmaceuticalInformation.Server
         #region ' Exporting Of Modifications '
 
         // Exporting Of Modifications
-        public DataSet ExportingOfModifications()
-        {
-            //
-            // Initialize ExportedDataSet
-            //
-            DataSet ExportedDataSet = new DataSet("ExportedData");
-            ExportedDataSet.RemotingFormat = SerializationFormat.Binary;
-            //
-            // Addition Of Information Of Data
-            //
-            DataTable Information = new DataTable("InformationOfData");
-            Information.Columns.Add("Key", typeof(string));
-            Information.Columns.Add("Value", typeof(object));
-            Information.PrimaryKey = new DataColumn[1] { Information.Columns["Key"] };
-            //
-            Information.Rows.Add("CountOfRows", 0);
-            Information.Rows.Add("Source", "ServerOfServiceOfHelp");
-            //
-            Information.AcceptChanges();
-            //
-            ExportedDataSet.Tables.Add(Information);
-            //
-            // Reading Modifications
-            //
-            string[,] SchemasOfTables = new string[4, 2]
-            {
-                {
-                    "Pharmacy", 
-                    "SELECT M.ID AS 'IDOfModification', " + 
-                    "P.Id_Pharmacy AS 'ID', Id_District AS 'ID_DI', Name_full AS 'Name', Addr AS 'Address', " + 
-                    "Phone AS 'Phone', Mail AS 'Mail', Web AS 'Site', Hours AS 'Schedule', Trans AS 'Transport', " + 
-                    "Date_upd AS 'Updating', Is_deleted AS 'Deleting' " + 
-                    "FROM ModifiedData AS M, Pharmacy AS P " + 
-                    "WHERE ((Type = 1) AND (M.ID01 = P.Id_Pharmacy));"
-                },
-                {
-                    "Products", 
-                    "SELECT M.ID AS 'IDOfModification', " + 
-                    "P.Id_Product AS 'ID', Id_product_group AS 'ID_PG', Name_full AS 'Name', " + 
-                    "Composition AS 'Composition', Description AS 'Description', Date_upd AS 'Updating', " + 
-                    "Is_deleted AS 'Deleting' " + 
-                    "FROM ModifiedData AS M, Product AS P " + 
-                    "WHERE ((Type = 2) AND (M.ID01 = P.ID_Product));"
-                },
-                {
-                    "PriceList", 
-                    "SELECT M.ID AS 'IDOfModification', " + 
-                    "PL.Id_Pharmacy AS 'ID_PH', Id_Product AS 'ID_PR', Price AS 'Price', " + 
-                    "Is_deleted AS 'Deleting', Is_privilege AS 'Preferential' " + 
-                    "FROM ModifiedData AS M, Price_List AS PL " + 
-                    "WHERE ((Type = 3) AND ((M.ID01 = PL.Id_Pharmacy) AND (M.ID02 = PL.Id_Product)));"
-                },
-                {
-                    "IDsOfModifications", 
-                    "SELECT ID AS 'IDOfModification' " + 
-                    "FROM ModifiedData " + 
-                    "WHERE (Type IN (1, 2, 3));"
-                }
-            };
-            //
-            int CountOfExported = 0;
-            SqlCommand SelectionOfModifications = new SqlCommand("", ConnectionToBase);
-            SqlDataAdapter GettingModifications = new SqlDataAdapter(SelectionOfModifications);
-            //
-            for (int i = 0; i <= SchemasOfTables.GetUpperBound(0); i++)
-            {
-                // Creating Text Of Command
-                SelectionOfModifications.CommandText = SchemasOfTables[i, 1];
-                //
-                // Filling
-                //
-                try
-                {
-                    GettingModifications.FillSchema(ExportedDataSet, SchemaType.Source, SchemasOfTables[i, 0]);
-                    CountOfExported += GettingModifications.Fill(ExportedDataSet, SchemasOfTables[i, 0]);
-                }
-                catch (Exception E)
-                {
-                    ReturningMessageAboutError(
-                        String.Format("Ошибка при чтении данных из таблицы {0}", SchemasOfTables[i, 0]), E, false);
-                }
-            }
-            //
-            ExportedDataSet.Tables["InformationOfData"].Rows.Find("CountOfRows")["Value"] = CountOfExported;
-            //
-            ExportedDataSet.AcceptChanges();
-            //
-            // Return
-            //
-            return ExportedDataSet;
-        }
+        //public DataSet ExportingOfModifications()
+        //{
+        //    //
+        //    // Initialize ExportedDataSet
+        //    //
+        //    DataSet ExportedDataSet = new DataSet("ExportedData");
+        //    ExportedDataSet.RemotingFormat = SerializationFormat.Binary;
+        //    //
+        //    // Addition Of Information Of Data
+        //    //
+        //    DataTable Information = new DataTable("InformationOfData");
+        //    Information.Columns.Add("Key", typeof(string));
+        //    Information.Columns.Add("Value", typeof(object));
+        //    Information.PrimaryKey = new DataColumn[1] { Information.Columns["Key"] };
+        //    //
+        //    Information.Rows.Add("CountOfRows", 0);
+        //    Information.Rows.Add("Source", "ServerOfServiceOfHelp");
+        //    //
+        //    Information.AcceptChanges();
+        //    //
+        //    ExportedDataSet.Tables.Add(Information);
+        //    //
+        //    // Reading Modifications
+        //    //
+        //    string[,] SchemasOfTables = new string[4, 2]
+        //    {
+        //        {
+        //            "Pharmacy", 
+        //            "SELECT M.ID AS 'IDOfModification', " + 
+        //            "P.Id_Pharmacy AS 'ID', Id_District AS 'ID_DI', Name_full AS 'Name', Addr AS 'Address', " + 
+        //            "Phone AS 'Phone', Mail AS 'Mail', Web AS 'Site', Hours AS 'Schedule', Trans AS 'Transport', " + 
+        //            "Date_upd AS 'Updating', Is_deleted AS 'Deleting' " + 
+        //            "FROM ModifiedData AS M, Pharmacy AS P " + 
+        //            "WHERE ((Type = 1) AND (M.ID01 = P.Id_Pharmacy));"
+        //        },
+        //        {
+        //            "Products", 
+        //            "SELECT M.ID AS 'IDOfModification', " + 
+        //            "P.Id_Product AS 'ID', Id_product_group AS 'ID_PG', Name_full AS 'Name', " + 
+        //            "Composition AS 'Composition', Description AS 'Description', Date_upd AS 'Updating', " + 
+        //            "Is_deleted AS 'Deleting' " + 
+        //            "FROM ModifiedData AS M, Product AS P " + 
+        //            "WHERE ((Type = 2) AND (M.ID01 = P.ID_Product));"
+        //        },
+        //        {
+        //            "PriceList", 
+        //            "SELECT M.ID AS 'IDOfModification', " + 
+        //            "PL.Id_Pharmacy AS 'ID_PH', Id_Product AS 'ID_PR', Price AS 'Price', " + 
+        //            "Is_deleted AS 'Deleting', Is_privilege AS 'Preferential' " + 
+        //            "FROM ModifiedData AS M, Price_List AS PL " + 
+        //            "WHERE ((Type = 3) AND ((M.ID01 = PL.Id_Pharmacy) AND (M.ID02 = PL.Id_Product)));"
+        //        },
+        //        {
+        //            "IDsOfModifications", 
+        //            "SELECT ID AS 'IDOfModification' " + 
+        //            "FROM ModifiedData " + 
+        //            "WHERE (Type IN (1, 2, 3));"
+        //        }
+        //    };
+        //    //
+        //    int CountOfExported = 0;
+        //    SqlCommand SelectionOfModifications = new SqlCommand("", ConnectionToBase);
+        //    SqlDataAdapter GettingModifications = new SqlDataAdapter(SelectionOfModifications);
+        //    //
+        //    for (int i = 0; i <= SchemasOfTables.GetUpperBound(0); i++)
+        //    {
+        //        // Creating Text Of Command
+        //        SelectionOfModifications.CommandText = SchemasOfTables[i, 1];
+        //        //
+        //        // Filling
+        //        //
+        //        try
+        //        {
+        //            GettingModifications.FillSchema(ExportedDataSet, SchemaType.Source, SchemasOfTables[i, 0]);
+        //            CountOfExported += GettingModifications.Fill(ExportedDataSet, SchemasOfTables[i, 0]);
+        //        }
+        //        catch (Exception E)
+        //        {
+        //            ReturningMessageAboutError(
+        //                String.Format("Ошибка при чтении данных из таблицы {0}", SchemasOfTables[i, 0]), E, false);
+        //        }
+        //    }
+        //    //
+        //    ExportedDataSet.Tables["InformationOfData"].Rows.Find("CountOfRows")["Value"] = CountOfExported;
+        //    //
+        //    ExportedDataSet.AcceptChanges();
+        //    //
+        //    // Return
+        //    //
+        //    return ExportedDataSet;
+        //}
 
         // Clearing Of Modifications
         public void ClearingOfModifications(DataSet Modifications)

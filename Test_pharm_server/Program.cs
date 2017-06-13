@@ -15,10 +15,10 @@ namespace Test_pharm_server
     {
         static void Main(string[] args)
         {
-            //Server srv = new Server();
-            //srv.StartingOfServer();
-            //Console.WriteLine("success!!!");
-            //Console.ReadLine();
+            Server srv = new Server();
+            srv.StartingOfServer();
+            Console.WriteLine("success!!!");
+            Console.ReadLine();
 
             //PhrmInfTESTEntities db = new PhrmInfTESTEntities("Data Source=aqua;Initial Catalog=PharmaceuticalInformation;Integrated Security=True");//("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True");
             ////var prod_10 = db.Products.Take(10);
@@ -43,11 +43,11 @@ namespace Test_pharm_server
             //    Console.WriteLine();
             //}
 
-            LocalDataContext ldc = new LocalDataContext("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True");
+            //LocalDataContext ldc = new LocalDataContext("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True");
 
-            DateTime dt = ldc.GetSystemDate();
+            //DateTime dt = ldc.GetSystemDate();
 
-            Console.WriteLine("SystemDate = {0}", dt);
+            //Console.WriteLine("SystemDate = {0}", dt);
 
             Console.ReadLine();
         }

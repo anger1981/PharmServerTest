@@ -87,57 +87,57 @@ namespace PharmaceuticalInformation.Server
         #region ' Synchronization '
 
         // Importing Modifications
-        public void ImportingModifications()
-        {
-            //
-            //RecordingInLogFile("Checking Of Importing Modifications");
-            //
-            DataSet ModifiedData = ExportingOfHelp.ExportingOfModifications();
-            //
-            if ((ModifiedData.Tables["Pharmacy"].Rows.Count > 0) ||
-                (ModifiedData.Tables["Products"].Rows.Count > 0) ||
-                (ModifiedData.Tables["PriceList"].Rows.Count > 0) ||
-                (ModifiedData.Tables["IDsOfModifications"].Rows.Count > 0))
-            {
-                //
-                RecordingInLogFile("Checking Of Importing Modifications");
-                //
-                ImportingOfIS.ImportingDataFromServiceOfHelp(ModifiedData);
-                //
-                ExportingOfHelp.ClearingOfModifications(ModifiedData);
-                //
-                this.RecordingInLogFile("");
-                this.RecordingInLogFile("");
-            }
-        }
+        //public void ImportingModifications()
+        //{
+        //    //
+        //    //RecordingInLogFile("Checking Of Importing Modifications");
+        //    //
+        //    DataSet ModifiedData = ExportingOfHelp.ExportingOfModifications();
+        //    //
+        //    if ((ModifiedData.Tables["Pharmacy"].Rows.Count > 0) ||
+        //        (ModifiedData.Tables["Products"].Rows.Count > 0) ||
+        //        (ModifiedData.Tables["PriceList"].Rows.Count > 0) ||
+        //        (ModifiedData.Tables["IDsOfModifications"].Rows.Count > 0))
+        //    {
+        //        //
+        //        RecordingInLogFile("Checking Of Importing Modifications");
+        //        //
+        //        ImportingOfIS.ImportingDataFromServiceOfHelp(ModifiedData);
+        //        //
+        //        ExportingOfHelp.ClearingOfModifications(ModifiedData);
+        //        //
+        //        this.RecordingInLogFile("");
+        //        this.RecordingInLogFile("");
+        //    }
+        //}
 
         // Exporting Data Of Updating
-        public void ExportingDataOfUpdating()
-        {
-            //
-            //RecordingInLogFile("Checking Of Exporting For Help");
-            //
-            DataSet DS = ExportingOfIS.Exporting();
-            //
-            DataSet[] DSs = new DataSet[1] { DS };
-            //
-            DS = UpdatingOfHelp.AssociationDateSet(DSs);
-            //
-            if ((DS.Tables["Pharmacy"].Rows.Count > 0) ||
-                (DS.Tables["GroupsOfProducts"].Rows.Count > 0) ||
-                (DS.Tables["Products"].Rows.Count > 0) ||
-                (DS.Tables["PriceList"].Rows.Count > 0) ||
-                (DS.Tables["FullUpdatingOfDates"].Rows.Count > 0))
-            {
-                //
-                RecordingInLogFile("Checking Of Exporting For Help");
-                //
-                UpdatingOfHelp.UpdatingOfData(DS);
-                //
-                this.RecordingInLogFile("");
-                this.RecordingInLogFile("");
-            }
-        }
+        //public void ExportingDataOfUpdating()
+        //{
+        //    //
+        //    //RecordingInLogFile("Checking Of Exporting For Help");
+        //    //
+        //    DataSet DS = ExportingOfIS.Exporting();
+        //    //
+        //    DataSet[] DSs = new DataSet[1] { DS };
+        //    //
+        //    DS = UpdatingOfHelp.AssociationDateSet(DSs);
+        //    //
+        //    if ((DS.Tables["Pharmacy"].Rows.Count > 0) ||
+        //        (DS.Tables["GroupsOfProducts"].Rows.Count > 0) ||
+        //        (DS.Tables["Products"].Rows.Count > 0) ||
+        //        (DS.Tables["PriceList"].Rows.Count > 0) ||
+        //        (DS.Tables["FullUpdatingOfDates"].Rows.Count > 0))
+        //    {
+        //        //
+        //        RecordingInLogFile("Checking Of Exporting For Help");
+        //        //
+        //        UpdatingOfHelp.UpdatingOfData(DS);
+        //        //
+        //        this.RecordingInLogFile("");
+        //        this.RecordingInLogFile("");
+        //    }
+        //}
 
         #endregion
 
