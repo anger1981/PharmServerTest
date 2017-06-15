@@ -738,12 +738,9 @@ namespace PharmaceuticalInformation.Server
                 //
                 // Importing Of Prices Of Drugstore
                 //
-                //CountOfImporting += PricesOfDrugstore.Rows.Count;
                 ImportingOfPricesOfDrugstore(IDOfReception, IDsOfDrugstores[i], AllPrices, PricesOfDrugstore);
                 //
             }
-            // Return
-            //return;// CountOfImporting;
         }
 
         // Importing Of PriceList Of Drugstore
@@ -832,40 +829,15 @@ namespace PharmaceuticalInformation.Server
 
             try
             {
-                //Update existing in summary price list prices from PriceListDrugstore
-
-                //foreach (PriceListDrugstore pld in pld_upd)
-                //    PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential);
-
                 PricesOfDrugstore_IE.Join(PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore),
                 pld => pld.ID_PR, p => p.Id_Product, (pld, p) => pld)
                 .Select(pld => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
 
-                //PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore)
-                //    .Join(PricesOfDrugstore_IE, p => p.Id_Product, pld => pld.ID_PR
-                //          ,(p, pld) => pld)
-                //          .Select(pld => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
-
-
-
-                //Inserting new price, which not exists in summary price_list
-
                 PricesOfDrugstore_IE.Where(pld => !PhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any())
                 .Select(pld => PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
-                //foreach (PriceListDrugstore pld in pld_ins)
-                //    PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential);
-
-                //PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, 454, 10000, false, false);
-
-
-
             }
             catch (Exception E)
             {
-                //
-                //if (ConnectionToBase.State == ConnectionState.Open)
-                //    ConnectionToBase.Close();
-                //
                 RecordingInLogFile(String.Format("Ошибка при обновлении существующих и вставке новых позиций из файла остатков: {0}", E.Message));
             }
 
@@ -1031,176 +1003,6 @@ namespace PharmaceuticalInformation.Server
 
 
         #endregion
-
-
-        #region ' Importing Data From Service Of Help TMP '
-
-        // Importing Data From Service Of Help
-        //public void ImportingDataFromServiceOfHelp(DataSet ImportedData)
-        //{
-        //    if (ImportedData != null)
-        //    {
-        //        //
-        //        // Recording Of Reception
-        //        //
-        //        bool ContainsPriceList = false;
-        //        if (ImportedData.Tables.Contains("PriceList"))
-        //            if (ImportedData.Tables["PriceList"].Rows.Count > 0)
-        //                ContainsPriceList = true;
-        //        //
-        //        /*
-        //        this.RecordingInLogFile(
-        //            String.Format("ImportingDataFromServiceOfHelp02 Count = {0}", ImportedData.Tables.Count));
-        //        */
-        //        //
-        //        int IDOfReception = RecordingOfReception(108, ContainsPriceList, false, DateTime.Now);
-        //        //
-        //        foreach (DataTable CurrentTable in ImportedData.Tables)
-        //        {
-        //            //
-        //            switch (CurrentTable.TableName)
-        //            {
-        //                case "Pharmacy":
-        //                    {
-        //                        //
-        //                        /*
-        //                        this.RecordingInLogFile(
-        //                            String.Format("{0} A {1}", CurrentTable.TableName, CurrentTable.Rows.Count));
-        //                        */
-        //                        /*
-        //                        //
-        //                        // Deleting New Rows In Pharmacy
-        //                        //
-        //                        // Обрыв тотальный ???
-        //                        ClearingNewRowsInPharmacy(CurrentTable);
-        //                        //
-        //                        this.RecordingInLogFile(
-        //                            String.Format("{0} B {1}", CurrentTable.TableName, CurrentTable.Rows.Count));
-        //                        //
-        //                        // Filling Updating Of Date
-        //                        //
-        //                        foreach (DataRow CurrentRow in CurrentTable.Rows)
-        //                            CurrentRow["Updating"] = DateTime.Now;
-        //                        //
-        //                        // Updating 
-        //                        //
-        //                        this.RecordingInLogFile(
-        //                            String.Format("{0} C {1}", CurrentTable.TableName, CurrentTable.Rows.Count));
-        //                        //
-        //                        UpdatingOfData.UpdatingOfPharmacy(CurrentTable);
-        //                        */
-        //                    }
-        //                    break;
-        //                case "Products":
-        //                    {
-        //                        //
-        //                        /*this.RecordingInLogFile(
-        //                            String.Format("{0} {1}", CurrentTable.TableName, CurrentTable.Rows.Count));*/
-        //                        //
-        //                        DataTable Products = CurrentTable.Copy();
-        //                        //
-        //                        // Filling Updating Of Date
-        //                        //
-        //                        foreach (DataRow CurrentRow in Products.Rows)
-        //                            CurrentRow["Updating"] = DateTime.Now;
-        //                        //
-        //                        // Renaming Name
-        //                        //
-        //                        foreach (DataRow CurrentProduct in Products.Rows)
-        //                        {
-        //                            //
-        //                            if ((CurrentProduct["Name"] != null) &&
-        //                                !(CurrentProduct["Name"] is DBNull))
-        //                            {
-        //                                string NameOfProduct = CurrentProduct["Name"].ToString();
-        //                                if (NameOfProduct.Length > 2)
-        //                                    if (NameOfProduct.EndsWith("\n") &&
-        //                                        (NameOfProduct[NameOfProduct.Length - 2] != '\n'))
-        //                                        NameOfProduct = NameOfProduct.Remove(NameOfProduct.Length - 2, 2);
-        //                                //
-        //                                NameOfProduct = NameOfProduct.Trim();
-        //                                CurrentProduct["Name"] = NameOfProduct;
-        //                            }
-        //                        }
-        //                        Products.AcceptChanges();
-        //                        //
-        //                        // Updating 
-        //                        //
-        //                        /*this.RecordingInLogFile(
-        //                            String.Format("{0} {1}", Products.TableName, Products.Rows.Count));*/
-        //                        //
-        //                        UpdatingOfData.UpdatingOfProducts(Products);
-        //                    }
-        //                    break;
-        //                case "PriceList":
-        //                    {
-        //                        //
-        //                        /*this.RecordingInLogFile(
-        //                            String.Format("{0} {1}", CurrentTable.TableName, CurrentTable.Rows.Count));*/
-        //                        //
-        //                        // Renaming Table And Columns
-        //                        //
-        //                        DataTable PriceList = CurrentTable.Copy();
-        //                        //
-        //                        // Addition Of Column AllPrices
-        //                        //
-        //                        PriceList.Columns.Add("AllPrices", typeof(bool));
-        //                        foreach (DataRow CurrentPrice in PriceList.Rows)
-        //                            CurrentPrice["AllPrices"] = false;
-        //                        //
-        //                        PriceList.AcceptChanges();
-        //                        /*
-        //                        //
-        //                        // Recording Of Reception
-        //                        //
-        //                        int IDOfReception = RecordingOfReception(
-        //                            108, (PriceList.Rows.Count > 0) ? true : false, false, DateTime.Now);
-        //                        */
-        //                        //
-        //                        // Importing Of Prices
-        //                        //
-        //                        /*this.RecordingInLogFile(
-        //                            String.Format("{0} {1}", PriceList.TableName, PriceList.Rows.Count));*/
-        //                        //
-        //                        if (IDOfReception > 0)
-        //                            ImportingOfPriceList(PriceList, IDOfReception);
-        //                        //
-        //                    }
-        //                    break;
-        //                case "LogOfService":
-        //                    {
-        //                        //IDsOfModifications
-        //                        /*this.RecordingInLogFile(
-        //                            String.Format("{0} {1}", CurrentTable.TableName, CurrentTable.Rows.Count));*/
-        //                        //
-        //                        //UpdatingLogOfDrugstore(CurrentTable, 108);
-        //                    }
-        //                    break;
-        //                case "IDsOfModifications":
-        //                    {
-        //                        //IDsOfModifications
-        //                    }
-        //                    break;
-        //                case "InformationOfData":
-        //                    {
-        //                        //InformationOfData
-        //                    }
-        //                    break;
-        //                default:
-        //                    {
-        //                        //
-        //                        this.RecordingInLogFile(
-        //                            String.Format("Неизвестная таблица в наборе данных {0}", CurrentTable.TableName));
-        //                    }
-        //                    break;
-        //            }
-        //        }                
-        //    }
-        //}
-
-
-        #endregion
-
 
         // Recording Of Reception
         private int RecordingOfReception(
