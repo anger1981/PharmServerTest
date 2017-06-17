@@ -19,7 +19,7 @@ namespace PharmaceuticalInformation.Server
 
         private PhrmInfTESTEntities PhrmInf;
         //
-        private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfData;
+        //private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfData;
 
         public class PriceListDrugstore
         {
@@ -54,7 +54,7 @@ namespace PharmaceuticalInformation.Server
             //
             // !!!
             //
-            UpdatingOfData = new Updating.UpdatingOfDataOfInformationForMsSQL(StringOfConnection, PathToLogFile);
+            //UpdatingOfData = new Updating.UpdatingOfDataOfInformationForMsSQL(StringOfConnection, PathToLogFile);
         }
 
         #endregion
@@ -798,18 +798,16 @@ namespace PharmaceuticalInformation.Server
 
                 try
                 {
+                    //Check all active price in Pharmacy from resived price_list and which not listed in resived price_list as deleted
                     PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted)
-                    .Join(IDsForDeleting_IE_i, p => p.Id_Product, pt => pt, (p, pt) => p)
-                    .UpdateAsync(pl => new price_list { Is_deleted = true });
+                        .Join(IDsForDeleting_IE_i, p => p.Id_Product, pt => pt, (p, pt) => p)
+                        .UpdateAsync(pl => new price_list { Is_deleted = true });
 
+                    //Set this changes in history of price
                     PhrmInf.HistoryOfChangesOfPrices.AddRange(IDsForDeleting_IE_HP);
-                    //UpdateOfUpdatingData(IDsForDeleting, String.Format("Price_list Deleting {0}", IDOfDrugstore));
                 }
                 catch (Exception E)
                 {
-                    //
-                    //if (ConnectionToBase.State == ConnectionState.Open)
-                    //    ConnectionToBase.Close();
                     //
                     RecordingInLogFile(String.Format("Ошибка при пометке на удаление: {0}", E.Message));
                 }
@@ -829,12 +827,16 @@ namespace PharmaceuticalInformation.Server
 
             try
             {
+                //update existing prices which presents in recived price_list
                 PricesOfDrugstore_IE.Join(PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore),
-                pld => pld.ID_PR, p => p.Id_Product, (pld, p) => pld)
-                .Select(pld => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
+                        pld => pld.ID_PR, p => p.Id_Product, (pld, p) => pld)
+                    .Select(pld => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential))
+                    .ToList();
 
+                //Insert new prices, which not exists in global price_list
                 PricesOfDrugstore_IE.Where(pld => !PhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any())
-                .Select(pld => PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential)).ToList();
+                    .Select(pld => PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential))
+                    .ToList();
             }
             catch (Exception E)
             {

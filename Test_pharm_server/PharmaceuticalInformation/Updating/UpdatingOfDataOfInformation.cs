@@ -14,10 +14,10 @@ namespace PharmaceuticalInformation.Updating
 
         #region ' Fields '
 
-        // Connection To Base
-        protected System.Data.Common.DbConnection ConnectionToBase;
-        // Updating Of Data
-        protected System.Data.Common.DbDataAdapter _UpdatingOfData;
+        //// Connection To Base
+        //protected System.Data.Common.DbConnection ConnectionToBase;
+        //// Updating Of Data
+        //protected System.Data.Common.DbDataAdapter _UpdatingOfData;
 
         protected PhrmInfTESTEntities PhrmInf;
 
@@ -32,12 +32,12 @@ namespace PharmaceuticalInformation.Updating
             //
             try
             {
-                ConnectionToBase = CreatingConnection(StringOfConnection);
+                //ConnectionToBase = CreatingConnection(StringOfConnection);
                 try
                 {
                     PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
-                    ConnectionToBase.Open();
-                    ConnectionToBase.Close();
+                    //ConnectionToBase.Open();
+                    //ConnectionToBase.Close();
                 }
                 catch (Exception E) { throw new Exception(String.Format("Ошибка при открытии подключения обновления: {0}", E)); }
             }
@@ -45,7 +45,7 @@ namespace PharmaceuticalInformation.Updating
             //
             // Initializing UpdatingOfData
             //
-            _UpdatingOfData = CreatingDataAdapter();
+            //_UpdatingOfData = CreatingDataAdapter();
         }
 
         public UpdatingOfDataOfInformation(string StringOfConnection, string PathToLogFile)
@@ -153,43 +153,43 @@ namespace PharmaceuticalInformation.Updating
 
         #region ' Service '
 
-        // Checking Of Data Of Filled
-        protected virtual bool CheckingOfData(DataTable DataForChecking)
-        {
-            //
-            bool ResultOfChecking = false;
-            //
-            string[] NamesOfTables = new string[7] 
-            { "Pharmacy", "GroupsOfProducts", "Products", "PriceList", "FullUpdatingOfDates", "CountOfExported", "Announcements" };
-            //
-            if (DataForChecking != null)
-            {
-                string NameOfChecking = "";
-                //
-                foreach (string CurrentTableName in NamesOfTables)
-                    if (CurrentTableName == DataForChecking.TableName)
-                        NameOfChecking = CurrentTableName;
-                //
-                if (NameOfChecking != "")
-                {
-                    //
-                    DataForChecking.AcceptChanges();
-                    //
-                    if (DataForChecking.Rows.Count > 0)
-                        ResultOfChecking = true;
-                    else
-                        ResultOfChecking = false;
-                }
-                else
-                    ResultOfChecking = false;
-            }
-            else
-                ResultOfChecking = true;
-            //
-            // Return
-            //
-            return ResultOfChecking;
-        }
+        //// Checking Of Data Of Filled
+        //protected virtual bool CheckingOfData(DataTable DataForChecking)
+        //{
+        //    //
+        //    bool ResultOfChecking = false;
+        //    //
+        //    string[] NamesOfTables = new string[7] 
+        //    { "Pharmacy", "GroupsOfProducts", "Products", "PriceList", "FullUpdatingOfDates", "CountOfExported", "Announcements" };
+        //    //
+        //    if (DataForChecking != null)
+        //    {
+        //        string NameOfChecking = "";
+        //        //
+        //        foreach (string CurrentTableName in NamesOfTables)
+        //            if (CurrentTableName == DataForChecking.TableName)
+        //                NameOfChecking = CurrentTableName;
+        //        //
+        //        if (NameOfChecking != "")
+        //        {
+        //            //
+        //            DataForChecking.AcceptChanges();
+        //            //
+        //            if (DataForChecking.Rows.Count > 0)
+        //                ResultOfChecking = true;
+        //            else
+        //                ResultOfChecking = false;
+        //        }
+        //        else
+        //            ResultOfChecking = false;
+        //    }
+        //    else
+        //        ResultOfChecking = true;
+        //    //
+        //    // Return
+        //    //
+        //    return ResultOfChecking;
+        //}
 
         // Clear
         public virtual void ClearingOfTableOfPriceList()
@@ -197,37 +197,37 @@ namespace PharmaceuticalInformation.Updating
             //
         }
 
-        // Filled
-        public void ExecutingCommands(string[] TextOfCommands)
-        {
-            //
-            DbCommand CommandOfClearing = CreatingCommand("", new DbParameter[0]);
-            CommandOfClearing.CommandTimeout = 1000;
-            //
-            foreach (string CurrentTextOfCommand in TextOfCommands)
-            {
-                CommandOfClearing.CommandText = CurrentTextOfCommand;
-                //
-                try
-                {
-                    CommandOfClearing.Connection.Open();
-                    //
-                    try { CommandOfClearing.ExecuteNonQuery(); }
-                    catch (Exception E) { ReturningMessageAboutError("Ошибка при зачистке таблицы PriceList", E, false); }
-                    //
-                    CommandOfClearing.Connection.Close();
-                }
-                catch (Exception E)
-                {
-                    //
-                    if (CommandOfClearing.Connection.State == ConnectionState.Open)
-                        CommandOfClearing.Connection.Close();
-                    //
-                    ReturningMessageAboutError("Ошибка при открытии подключения зачистки", E, false);
-                }
-            }
-            //
-        }
+        //// Filled
+        //public void ExecutingCommands(string[] TextOfCommands)
+        //{
+        //    //
+        //    DbCommand CommandOfClearing = CreatingCommand("", new DbParameter[0]);
+        //    CommandOfClearing.CommandTimeout = 1000;
+        //    //
+        //    foreach (string CurrentTextOfCommand in TextOfCommands)
+        //    {
+        //        CommandOfClearing.CommandText = CurrentTextOfCommand;
+        //        //
+        //        try
+        //        {
+        //            CommandOfClearing.Connection.Open();
+        //            //
+        //            try { CommandOfClearing.ExecuteNonQuery(); }
+        //            catch (Exception E) { ReturningMessageAboutError("Ошибка при зачистке таблицы PriceList", E, false); }
+        //            //
+        //            CommandOfClearing.Connection.Close();
+        //        }
+        //        catch (Exception E)
+        //        {
+        //            //
+        //            if (CommandOfClearing.Connection.State == ConnectionState.Open)
+        //                CommandOfClearing.Connection.Close();
+        //            //
+        //            ReturningMessageAboutError("Ошибка при открытии подключения зачистки", E, false);
+        //        }
+        //    }
+        //    //
+        //}
 
         // Filled
         public DataSet AssociationDateSet(DataSet[] ListForAssociation)

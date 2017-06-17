@@ -44,6 +44,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Ninject, Version=4.0.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.4.0.0-beta-0134\lib\net45\Ninject.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration.Install" />
@@ -134,12 +138,9 @@
     <Compile Include="PharmaceuticalInformation\Server\ExportingOfData.cs" />
     <Compile Include="PharmaceuticalInformation\Server\ImportingOfData.cs" />
     <Compile Include="PharmaceuticalInformation\Server\Server.cs" />
-    <Compile Include="PharmaceuticalInformation\Server\SynchronizationOfDataOfDataBases.cs" />
     <Compile Include="PharmaceuticalInformation\Service\Reportings.cs" />
     <Compile Include="PharmaceuticalInformation\Service\WorkingWithFiles.cs" />
     <Compile Include="PharmaceuticalInformation\Service\WorkingWithFTP.cs" />
-    <Compile Include="PharmaceuticalInformation\Updating\UpdatingOfDataOfInformation.cs" />
-    <Compile Include="PharmaceuticalInformation\Updating\UpdatingOfDataOfInformationForMsSQL.cs" />
     <Compile Include="PharmaceuticalInformation\BaseTypes\BaseType.cs" />
     <Compile Include="Pharmacy.cs">
       <DependentUpon>PhrmInfMod.tt</DependentUpon>

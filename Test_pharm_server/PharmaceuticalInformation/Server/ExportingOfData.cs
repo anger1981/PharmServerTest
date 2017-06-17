@@ -25,11 +25,11 @@ namespace PharmaceuticalInformation.Server
 
         public class PriceListGlobal
         {
-            public int ID_DR;
-            public int ID_PR;
-            public decimal Price;
-            public DateTime Actual;
-            public bool Preferential;
+            public int ID_DR { get; set; }
+            public int ID_PR { get; set; }
+            public decimal Price { get; set; }
+            public DateTime Actual { get; set; }
+            public bool Preferential { get; set; }
         }
 
         private string StringOfConnection;
@@ -390,8 +390,9 @@ namespace PharmaceuticalInformation.Server
                     Preferential = pl.Is_privilege
                 });
 
-                ExportedPriceListsIEn.ToList().Sort((x, y) => 10 * Math.Sign(x.ID_DR - y.ID_DR) + Math.Sign(x.ID_PR - y.ID_PR));
-                ExportedPriceListsIEn.Fill(ref ExportedPriceLists);
+                List<PriceListGlobal> lPLG = ExportedPriceListsIEn.ToList();
+                lPLG.Sort((x, y) => 10 * Math.Sign(x.ID_DR - y.ID_DR) + Math.Sign(x.ID_PR - y.ID_PR));
+                lPLG.Fill(ref ExportedPriceLists);
             }
             catch (Exception E)
             { 
@@ -862,11 +863,10 @@ namespace PharmaceuticalInformation.Server
                 //ConnectionToBase.Open();
                 InformationOfExporting.Rows.Add("DateOfStart", MaxDateService);
                 InformationOfExporting.Rows.Add("DateOfEnd", DateOfExported);
-            }
-            //
-            // Creating File Of Exporting Scripts
-            //
-            if (SuccessfulFilling)
+
+                //
+                // Creating File Of Exporting Scripts
+                //
                 try
                 {
                     //
@@ -901,8 +901,8 @@ namespace PharmaceuticalInformation.Server
                             {
                                 string TextOfCommandOfInserting =
                                     String.Format(
-                                    "INSERT INTO Pharm66.Price_List " + 
-                                    "(Id_Pharmacy, Id_Product, Price, Date_upd, Is_deleted, Is_privilege) {0}" + 
+                                    "INSERT INTO Pharm66.Price_List " +
+                                    "(Id_Pharmacy, Id_Product, Price, Date_upd, Is_deleted, Is_privilege) {0}" +
                                     "VALUES ({1}, {2}, {3}, '{4}', 0, {6});{0}",
                                     Paragraph, ((int)CurrentPrice["ID_PH"]), ((int)CurrentPrice["ID_PR"]),
                                     GettingStringOfDecimal(CurrentPrice["Price"]),
@@ -923,7 +923,7 @@ namespace PharmaceuticalInformation.Server
                             string TextOfCommandOfUpdating =
                                 String.Format(
                                 "UPDATE Pharm66.Price_List SET Date_upd = '{2}' WHERE Id_Pharmacy = {1};{0}",
-                                Paragraph, 
+                                Paragraph,
                                 ((int)CurrentDate["ID"]), GettingStringOfDate(((DateTime)CurrentDate["Date"])));
                             //
                             SW.Write(TextOfCommandOfUpdating);
@@ -969,6 +969,7 @@ namespace PharmaceuticalInformation.Server
                             String.Format("ERROR Ошибка при удалении файла: {0}: {1}", PathToFileOfScripts, E2.Message));
                     }
                 }
+            }
             //
             // Return
             //

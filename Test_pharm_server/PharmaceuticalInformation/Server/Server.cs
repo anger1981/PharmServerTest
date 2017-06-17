@@ -16,22 +16,17 @@ namespace PharmaceuticalInformation.Server
         // Transfer
         //
         private PharmaceuticalInformation.Server.ExchangeBetweenSystemAndQueues ExchangeFTPAndDataBase;
-        private PharmaceuticalInformation.Server.SynchronizationOfDataOfDataBases SynchronizationOfData;
         //
         private string StringOfConnection;
         private string StringOfConnection02;
         //
         // Paths Of Archives
         //
-        //private string PathOfArchivesOfPriceList;
-        //private string PathOfArchivesOfLogFiles;
         private string PathOfArchivesOfImporting;
         //
         // Paths Of Importing
         //
-        //private string PathOfImportingData;
         private string PathOfImportingData;
-        //private string PathOfImportingManData;
         private string PathOfImportingOfIodineFace;
         //
         // Paths Of Exporting
@@ -56,7 +51,6 @@ namespace PharmaceuticalInformation.Server
         private int HourOfLastExportingOfScripts;
         private int HourOfLastExportingOfData;
         private int HourOfNextPrivateImporting;
-        //private int CountOfRepeatedEnteringInProcedure;
         private int CountOfIterationWithLastScraping;
 
         #endregion
@@ -107,7 +101,7 @@ namespace PharmaceuticalInformation.Server
             //
             // Access To Store Of Data
             //
-            string AccessToStoreOfData = doc.DocumentElement["AccessToStoreOfData"].InnerText; ;
+            string AccessToStoreOfData = doc.DocumentElement["AccessToStoreOfData"].InnerText;
             //
             // Initializing Paths Of FTP
             //

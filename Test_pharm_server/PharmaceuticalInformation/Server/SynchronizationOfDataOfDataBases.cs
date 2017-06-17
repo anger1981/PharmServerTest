@@ -17,7 +17,7 @@ namespace PharmaceuticalInformation.Server
         private SqlConnection ConnectionToIS;
         //
         private ExportingOfData ExportingOfHelp;
-        private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfHelp;
+        //private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfHelp;
         //
         private ExportingOfData ExportingOfIS;
         private ImportingOfData ImportingOfIS;
@@ -66,7 +66,7 @@ namespace PharmaceuticalInformation.Server
             // Initializing Of Transfer
             //
             ExportingOfHelp = new ExportingOfData(StringOfConnectionToHelp, this.PathToLogFile);
-            UpdatingOfHelp = new Updating.UpdatingOfDataOfInformationForMsSQL(StringOfConnectionToHelp, this.PathToLogFile);
+            //UpdatingOfHelp = new Updating.UpdatingOfDataOfInformationForMsSQL(StringOfConnectionToHelp, this.PathToLogFile);
             //
             // Initializing Of IS
             //
@@ -77,7 +77,7 @@ namespace PharmaceuticalInformation.Server
             //
             this.ShowingMessages = false;
             ExportingOfHelp.ShowingMessages = false;
-            UpdatingOfHelp.ShowingMessages = false;
+            //UpdatingOfHelp.ShowingMessages = false;
             ExportingOfIS.ShowingMessages = false;
             ImportingOfIS.ShowingMessages = false;
         }
