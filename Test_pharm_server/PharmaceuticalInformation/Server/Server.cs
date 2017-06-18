@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using PharmaceuticalInformation.BaseTypes;
 using System.Xml;
+using Test_pharm_server.PharmaceuticalInformation.Infrastructure;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -75,13 +76,16 @@ namespace PharmaceuticalInformation.Server
             // Initialize String Of Connection
             //
 
+
             XmlDocument doc = new XmlDocument();
             doc.Load("ServiceConfg.xml");
 
             StringOfConnection = doc.DocumentElement["StringOfConnection"].InnerText;
 
             StringOfConnection02 = doc.DocumentElement["StringOfConnection02"].InnerText;
-           
+
+            NinjectDependencyResolver.AddBindings(StringOfConnection);
+
             //
             // Initializing Settings Of Logs
             //

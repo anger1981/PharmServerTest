@@ -8,6 +8,6 @@ namespace Test_pharm_server.PharmaceuticalInformation.Interfaces
 {
     public interface IPharmacyInformation
     {
-        PhrmInfTESTEntities EFPhrmInf { get;}
+        PhrmInfTESTEntities EF_PI(string ConnectionString);
     }
 }

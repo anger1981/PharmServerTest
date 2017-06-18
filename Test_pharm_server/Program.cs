@@ -8,6 +8,10 @@ using System.Data;
 using Test_pharm_server.PharmaceuticalInformation.DataTools;
 using System.Reflection;
 using Microsoft.CSharp;
+using Test_pharm_server.PharmaceuticalInformation.Infrastructure;
+using Ninject;
+using Test_pharm_server.PharmaceuticalInformation.Interfaces;
+using System.Data.SqlClient;
 
 namespace Test_pharm_server
 {
@@ -48,6 +52,30 @@ namespace Test_pharm_server
             //DateTime dt = ldc.GetSystemDate();
 
             //Console.WriteLine("SystemDate = {0}", dt);
+
+            //NinjectDependencyResolver.AddBindings("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True");
+
+            //var db = new PhrmInfTESTEntities("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True"); // NinjectDependencyResolver.kernel.Get<IPharmacyInformation>();
+
+            //var prod_10 = db.Products.Take(10);
+
+            //foreach (Product p in prod_10)
+            //    Console.WriteLine("ID {0}, name {1}, group {2}", p.Id_Product, p.Name_full, p.Id_product_group);
+
+            //var db2 = new PhrmInfTESTEntities("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True"); // NinjectDependencyResolver.kernel.Get<IPharmacyInformation>();
+
+            //var prod_20 = db2.Products.Take(20);
+
+            //foreach (Product p in prod_20)
+            //    Console.WriteLine("ID {0}, name {1}, group {2}", p.Id_Product, p.Name_full, p.Id_product_group);
+
+            //var conn = new SqlConnection("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True");
+
+            //conn.Open();
+
+            //var conn2 = new SqlConnection("Data Source=СЕМЬЯ-ПК\\SQLEXPRESS;Initial Catalog=PharmaceuticalInformation;Integrated Security=True");
+
+            //conn2.Open();
 
             Console.ReadLine();
         }

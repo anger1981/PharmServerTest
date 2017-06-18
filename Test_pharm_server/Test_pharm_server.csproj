@@ -133,7 +133,10 @@
       <DependentUpon>PhrmInfMod.tt</DependentUpon>
     </Compile>
     <Compile Include="PharmaceuticalInformation\DataTools\DataTableEnumerate.cs" />
+    <Compile Include="PharmaceuticalInformation\DataTools\EFPharmacyInformationRepository.cs" />
+    <Compile Include="PharmaceuticalInformation\DataTools\PharmacyInformationRelease.cs" />
     <Compile Include="PharmaceuticalInformation\Drugstore\ConvertingOfPriceList.cs" />
+    <Compile Include="PharmaceuticalInformation\Infrastructure\NinjectDependencyResolver.cs" />
     <Compile Include="PharmaceuticalInformation\Server\ExchangeBetweenSystemAndQueues.cs" />
     <Compile Include="PharmaceuticalInformation\Server\ExportingOfData.cs" />
     <Compile Include="PharmaceuticalInformation\Server\ImportingOfData.cs" />
@@ -142,6 +145,7 @@
     <Compile Include="PharmaceuticalInformation\Service\WorkingWithFiles.cs" />
     <Compile Include="PharmaceuticalInformation\Service\WorkingWithFTP.cs" />
     <Compile Include="PharmaceuticalInformation\BaseTypes\BaseType.cs" />
+    <Compile Include="PharmaceuticalInformation\Interfaces\PharmacyInformation.cs" />
     <Compile Include="Pharmacy.cs">
       <DependentUpon>PhrmInfMod.tt</DependentUpon>
     </Compile>
@@ -240,5 +244,6 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

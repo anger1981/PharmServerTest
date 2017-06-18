@@ -9,6 +9,9 @@ using Test_pharm_server;
 using System.Linq;
 using EntityFramework.Extensions;
 using Test_pharm_server.PharmaceuticalInformation.DataTools;
+using Test_pharm_server.PharmaceuticalInformation.Infrastructure;
+using Test_pharm_server.PharmaceuticalInformation.Interfaces;
+using Ninject;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -18,6 +21,7 @@ namespace PharmaceuticalInformation.Server
         #region ' Fields '
 
         private PhrmInfTESTEntities PhrmInf;
+        private IPharmacyInformation IPhrmInf;
         //
         //private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfData;
 
@@ -48,7 +52,8 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
+                IPhrmInf = NinjectDependencyResolver.kernel.Get<IPharmacyInformation>(); // new PhrmInfTESTEntities(StringOfConnection);
+                PhrmInf = IPhrmInf.EFPhrmInf;
             }
             catch (Exception E) { throw new Exception(String.Format("Ошибка при создании подключения экспорта: {0}", E)); }
             //

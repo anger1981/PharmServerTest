@@ -11,6 +11,9 @@ using EntityFramework.Extensions;
 using Test_pharm_server.PharmaceuticalInformation.DataTools;
 using System.Data.Linq.Mapping;
 using System.Reflection;
+using Test_pharm_server.PharmaceuticalInformation.Interfaces;
+using Test_pharm_server.PharmaceuticalInformation.Infrastructure;
+using Ninject;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -20,6 +23,7 @@ namespace PharmaceuticalInformation.Server
         #region ' Fields '
 
         private PhrmInfTESTEntities PhrmInf;
+        private IPharmacyInformation IPhrmInf;
 
         private LocalDataContext LDC;
 
@@ -50,7 +54,11 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
+                //PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
+
+                IPhrmInf = NinjectDependencyResolver.kernel.Get<IPharmacyInformation>(); // new PhrmInfTESTEntities(StringOfConnection);
+                PhrmInf = IPhrmInf.EFPhrmInf;
+
                 LDC = new LocalDataContext(StringOfConnection);
                 //ConnectionToBase = new SqlConnection(this.StringOfConnection);
             }
