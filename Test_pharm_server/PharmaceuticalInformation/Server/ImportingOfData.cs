@@ -20,10 +20,7 @@ namespace PharmaceuticalInformation.Server
 
         #region ' Fields '
 
-        private PhrmInfTESTEntities PhrmInf;
         private IPharmacyInformation IPhrmInf;
-        //
-        //private Updating.UpdatingOfDataOfInformationForMsSQL UpdatingOfData;
 
         public class PriceListDrugstore
         {
@@ -38,13 +35,13 @@ namespace PharmaceuticalInformation.Server
 
         #region ' Designer '
 
-        public ImportingOfData(string StringOfConnection)
-            : this(StringOfConnection, "")
+        public ImportingOfData(IPharmacyInformation _IPhrmInf)
+            : this(_IPhrmInf, "")
         {
             //
         }
 
-        public ImportingOfData(string StringOfConnection, string PathToLogFile)
+        public ImportingOfData(IPharmacyInformation _IPhrmInf, string PathToLogFile)
             : base(PathToLogFile)
         {
             //
@@ -52,8 +49,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                IPhrmInf = NinjectDependencyResolver.kernel.Get<IPharmacyInformation>(); // new PhrmInfTESTEntities(StringOfConnection);
-                PhrmInf = IPhrmInf.EFPhrmInf;
+                IPhrmInf = _IPhrmInf;
             }
             catch (Exception E) { throw new Exception(String.Format("Ошибка при создании подключения экспорта: {0}", E)); }
             //
@@ -80,8 +76,8 @@ namespace PharmaceuticalInformation.Server
 
             try
             {
-                PhrmInf.PrivateImportings.AsEnumerable().Fill(ref DT_PrivImp);
-                PhrmInf.RecodingIDsOfDrugstoresOfImportings.AsEnumerable().Fill(ref DT_RecID);
+                IPhrmInf.EFPhrmInf.PrivateImportings.AsEnumerable().Fill(ref DT_PrivImp);
+                IPhrmInf.EFPhrmInf.RecodingIDsOfDrugstoresOfImportings.AsEnumerable().Fill(ref DT_RecID);
 
                 TablesOfPrivateImporters.Tables.Add(DT_PrivImp);
                 TablesOfPrivateImporters.Tables.Add(DT_RecID);
@@ -480,14 +476,14 @@ namespace PharmaceuticalInformation.Server
                 {
                     try
                     {
-                        PhrmInf.UpdatingInformationOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
+                        IPhrmInf.EFPhrmInf.UpdatingInformationOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
                     }
                     catch
                     {
                         this.RecordingInLogFile(String.Format("Ошибка при обновлении регистрационных данных аптеки {0}", IDOfDrugstore));
                     }
                 }
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }            
         }
 
@@ -503,14 +499,14 @@ namespace PharmaceuticalInformation.Server
                 {
                     try
                     {
-                        PhrmInf.UpdatingListOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
+                        IPhrmInf.EFPhrmInf.UpdatingListOfSettings(IDOfDrugstore, row["key"].ToString(), row["value"].ToString());
                     }
                     catch
                     {
                         this.RecordingInLogFile(String.Format("Ошибка при обновлении данных настройки аптеки {0}", IDOfDrugstore));
                     }
                 }
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }
         }
 
@@ -526,7 +522,7 @@ namespace PharmaceuticalInformation.Server
                 {
                     try
                     {
-                        PhrmInf.UpdatingRegistrationOfDrugstores(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["PathToFolderOfPriceLists"].ToString(),
+                        IPhrmInf.EFPhrmInf.UpdatingRegistrationOfDrugstores(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["PathToFolderOfPriceLists"].ToString(),
                             row["MaskOfFullPriceList"].ToString(), row["MaskOfIncomingPriceList"].ToString(), row["MaskOfSoldPriceList"].ToString(),
                             Convert.ToBoolean(row["UseOfIDOfPriceList"]), Convert.ToBoolean(row["NotDeletingPriceList"]));
                     }
@@ -535,7 +531,7 @@ namespace PharmaceuticalInformation.Server
                         this.RecordingInLogFile(String.Format("Ошибка при обновлении регистрационных данных аптеки {0}", IDOfDrugstore));
                     }
                 }
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }
         }
 
@@ -551,7 +547,7 @@ namespace PharmaceuticalInformation.Server
                 {
                     try
                     {
-                        PhrmInf.UpdatingDatesOfTransfer(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["Name"].ToString(), Convert.ToInt32(row["Value"]), Convert.ToDateTime(row["Date"]));
+                        IPhrmInf.EFPhrmInf.UpdatingDatesOfTransfer(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["Name"].ToString(), Convert.ToInt32(row["Value"]), Convert.ToDateTime(row["Date"]));
 
                     }
                     catch
@@ -559,7 +555,7 @@ namespace PharmaceuticalInformation.Server
                         this.RecordingInLogFile(String.Format("Ошибка при обновлении информации об обновлениях справочных данных аптеки {0}", IDOfDrugstore));
                     }
                 }
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }
         }
 
@@ -575,7 +571,7 @@ namespace PharmaceuticalInformation.Server
                 {
                     try
                     {
-                        PhrmInf.UpdatingLogsOfDrugstores(IDOfDrugstore, row["Value"].ToString());
+                        IPhrmInf.EFPhrmInf.UpdatingLogsOfDrugstores(IDOfDrugstore, row["Value"].ToString());
 
                     }
                     catch
@@ -583,7 +579,7 @@ namespace PharmaceuticalInformation.Server
                         this.RecordingInLogFile(String.Format("Ошибка при обновлении данных лога аптеки {0}", IDOfDrugstore));
                     }
                 }
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }
         }
 
@@ -599,7 +595,7 @@ namespace PharmaceuticalInformation.Server
                 {
                     try
                     {
-                        PhrmInf.UpdatingAnnouncementsOfDrugstore(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["Caption"].ToString(), row["Text"].ToString(), Convert.ToBoolean(row["Published"]));
+                        IPhrmInf.EFPhrmInf.UpdatingAnnouncementsOfDrugstore(IDOfDrugstore, Convert.ToInt32(row["ID"]), row["Caption"].ToString(), row["Text"].ToString(), Convert.ToBoolean(row["Published"]));
 
                     }
                     catch
@@ -607,7 +603,7 @@ namespace PharmaceuticalInformation.Server
                         this.RecordingInLogFile(String.Format("Ошибка при обновлении таблицы объявлений, полученных аптекой {0}", IDOfDrugstore));
                     }
                 }
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }            
         }
 
@@ -766,7 +762,7 @@ namespace PharmaceuticalInformation.Server
 
                 // Take Id_Product actual prices
                 DataTable IDsOfProducts = new DataTable();
-                PhrmInf.price_list.Where(p => p.Id_Pharmacy == IDOfDrugstore && !p.Is_deleted)
+                IPhrmInf.EFPhrmInf.price_list.Where(p => p.Id_Pharmacy == IDOfDrugstore && !p.Is_deleted)
                     .Select(p => new { p.Id_Product }).Fill(ref IDsOfProducts);
                 
                 // Create table for product that should be marked deleted in pricelist
@@ -804,12 +800,12 @@ namespace PharmaceuticalInformation.Server
                 try
                 {
                     //Check all active price in Pharmacy from resived price_list and which not listed in resived price_list as deleted
-                    PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted)
+                    IPhrmInf.EFPhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted)
                         .Join(IDsForDeleting_IE_i, p => p.Id_Product, pt => pt, (p, pt) => p)
                         .UpdateAsync(pl => new price_list { Is_deleted = true });
 
                     //Set this changes in history of price
-                    PhrmInf.HistoryOfChangesOfPrices.AddRange(IDsForDeleting_IE_HP);
+                    IPhrmInf.EFPhrmInf.HistoryOfChangesOfPrices.AddRange(IDsForDeleting_IE_HP);
                 }
                 catch (Exception E)
                 {
@@ -833,14 +829,14 @@ namespace PharmaceuticalInformation.Server
             try
             {
                 //update existing prices which presents in recived price_list
-                PricesOfDrugstore_IE.Join(PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore),
+                PricesOfDrugstore_IE.Join(IPhrmInf.EFPhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore),
                         pld => pld.ID_PR, p => p.Id_Product, (pld, p) => pld)
-                    .Select(pld => PhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential))
+                    .Select(pld => IPhrmInf.EFPhrmInf.UpdatingPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential))
                     .ToList();
 
                 //Insert new prices, which not exists in global price_list
-                PricesOfDrugstore_IE.Where(pld => !PhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any())
-                    .Select(pld => PhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential))
+                PricesOfDrugstore_IE.Where(pld => !IPhrmInf.EFPhrmInf.price_list.Where(p => p.Id_Product == pld.ID_PR && p.Id_Pharmacy == IDOfDrugstore).Any())
+                    .Select(pld => IPhrmInf.EFPhrmInf.InsertingInPriceList(IDOfDrugstore, IDOfReception, pld.ID_PR, pld.Price, pld.Deleting, pld.Preferential))
                     .ToList();
             }
             catch (Exception E)
@@ -848,7 +844,7 @@ namespace PharmaceuticalInformation.Server
                 RecordingInLogFile(String.Format("Ошибка при обновлении существующих и вставке новых позиций из файла остатков: {0}", E.Message));
             }
 
-            PhrmInf.SaveChanges();
+            IPhrmInf.EFPhrmInf.SaveChanges();
 
             //
             // Updating Date Of Actuals
@@ -904,8 +900,8 @@ namespace PharmaceuticalInformation.Server
 
             try
             {
-                PhrmInf.ReportsOfImportingOfPriceLists.Add(ripl);
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.ReportsOfImportingOfPriceLists.Add(ripl);
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }
             catch (Exception E)
             {
@@ -926,7 +922,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.ReportsOfImportingOfPriceLists.Where(ripl => ripl.ID_PH == IDOfDrugstore && ripl.ID_HR == IDOfReception).
+                IPhrmInf.EFPhrmInf.ReportsOfImportingOfPriceLists.Where(ripl => ripl.ID_PH == IDOfDrugstore && ripl.ID_HR == IDOfReception).
                    Update(ripl_n => new ReportsOfImportingOfPriceList { CountOfAllPrices = CountOfPrices, FullPriceList = FullPriceList });
             }
             catch (Exception E)
@@ -945,7 +941,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.ReportsOfImportingOfPriceLists.Where(ripl => ripl.ID_PH == IDOfDrugstore && ripl.ID_HR == IDOfReception).
+                IPhrmInf.EFPhrmInf.ReportsOfImportingOfPriceLists.Where(ripl => ripl.ID_PH == IDOfDrugstore && ripl.ID_HR == IDOfReception).
                    Update(ripl_n => new ReportsOfImportingOfPriceList { CountNotConfirmed = CountOfDeleting });
             }
             catch (Exception E)
@@ -964,7 +960,7 @@ namespace PharmaceuticalInformation.Server
             //            
             try
             {
-                PhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted).
+                IPhrmInf.EFPhrmInf.price_list.Where(pl => pl.Id_Pharmacy == IDOfDrugstore && !pl.Is_deleted).
                     Update(plu => new price_list { Actual = DateTime.Now });
             }
             catch (Exception E)
@@ -987,7 +983,7 @@ namespace PharmaceuticalInformation.Server
 
             try
             {
-                int CountOfDrugstore = PhrmInf.Pharmacies.Where(p => !p.Is_deleted && p.Id_Pharmacy == IDOfDrugstore).Count();
+                int CountOfDrugstore = IPhrmInf.EFPhrmInf.Pharmacies.Where(p => !p.Is_deleted && p.Id_Pharmacy == IDOfDrugstore).Count();
                 //
                 ResultOfActivation = (CountOfDrugstore > 0) ? true : false;
             }
@@ -1031,8 +1027,8 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.HistoryOfReceptions.Add(hr);
-                PhrmInf.SaveChanges();
+                IPhrmInf.EFPhrmInf.HistoryOfReceptions.Add(hr);
+                IPhrmInf.EFPhrmInf.SaveChanges();
             }
             catch (Exception E)
             {
@@ -1046,7 +1042,7 @@ namespace PharmaceuticalInformation.Server
             int IDOfReception = 0;
             try
             {
-                IDOfReception = PhrmInf.HistoryOfReceptions.Max(i => i.ID);
+                IDOfReception = IPhrmInf.EFPhrmInf.HistoryOfReceptions.Max(i => i.ID);
             }
             catch { this.RecordingInLogFile("Ошибка при получении IDOfReception"); }
             //

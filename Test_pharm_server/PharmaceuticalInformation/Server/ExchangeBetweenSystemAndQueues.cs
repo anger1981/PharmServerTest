@@ -6,6 +6,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using PharmaceuticalInformation.BaseTypes;
+using Test_pharm_server.PharmaceuticalInformation.Infrastructure;
+using Test_pharm_server.PharmaceuticalInformation.Interfaces;
+using Ninject;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -54,20 +57,20 @@ namespace PharmaceuticalInformation.Server
 
         #region ' Designer '
 
-        public ExchangeBetweenSystemAndQueues(string StringOfConnection)
-            : this(StringOfConnection, "")
+        public ExchangeBetweenSystemAndQueues(IPharmacyInformation _IPhrmInf)
+            : this(_IPhrmInf, "")
         {
             //
         }
 
-        public ExchangeBetweenSystemAndQueues(string StringOfConnection, string PathToLogFile)
+        public ExchangeBetweenSystemAndQueues(IPharmacyInformation _IPhrmInf, string PathToLogFile)
             : base(PathToLogFile)
         {
             //
             // Initializing Transfer
             //
-            ImportingOfData = new ImportingOfData(StringOfConnection, PathToLogFile);
-            ExportingOfData = new ExportingOfData(StringOfConnection, PathToLogFile);
+            ImportingOfData = new ImportingOfData(_IPhrmInf, PathToLogFile);
+            ExportingOfData = new ExportingOfData(_IPhrmInf, PathToLogFile);
             //
             // Initializing Services
             //

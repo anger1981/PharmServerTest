@@ -19,7 +19,7 @@ namespace Test_pharm_server.PharmaceuticalInformation.DataTools
 {
     public partial class LocalDataContext : DataContext
     {
-        public LocalDataContext(string StrConn) : base(StrConn) {}
+        public LocalDataContext(IDbConnection connection) : base(connection) {}
 
         [Function(Name = "GetDate", IsComposable = true)]
         public DateTime GetSystemDate()

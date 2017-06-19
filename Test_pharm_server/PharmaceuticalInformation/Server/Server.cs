@@ -5,6 +5,8 @@ using System.IO;
 using PharmaceuticalInformation.BaseTypes;
 using System.Xml;
 using Test_pharm_server.PharmaceuticalInformation.Infrastructure;
+using Test_pharm_server.PharmaceuticalInformation.Interfaces;
+using Ninject;
 
 namespace PharmaceuticalInformation.Server
 {
@@ -124,7 +126,7 @@ namespace PharmaceuticalInformation.Server
             // Initialize ExchangeFTPAndSystemDataBase
             //
             ExchangeFTPAndDataBase = new 
-                PharmaceuticalInformation.Server.ExchangeBetweenSystemAndQueues(StringOfConnection, this.PathToLogFile);
+                PharmaceuticalInformation.Server.ExchangeBetweenSystemAndQueues(NinjectDependencyResolver.kernel.Get<IPharmacyInformation>(), this.PathToLogFile);
             //
             /*
             SynchronizationOfData = new

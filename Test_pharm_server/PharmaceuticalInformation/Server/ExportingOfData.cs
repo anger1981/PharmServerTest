@@ -22,7 +22,6 @@ namespace PharmaceuticalInformation.Server
 
         #region ' Fields '
 
-        //private PhrmInfTESTEntities PhrmInf;
         private IPharmacyInformation IPhrmInf;
 
         private LocalDataContext LDC;
@@ -42,25 +41,17 @@ namespace PharmaceuticalInformation.Server
         
         #region ' Designer '
 
-        public ExportingOfData(string StringOfConnection, string PathToLogFile)
+        public ExportingOfData(IPharmacyInformation _IPhrmInf, string PathToLogFile)
             : base(PathToLogFile)
         {
-            //
-            // Initializing String Of Connection
-            //
-            this.StringOfConnection = StringOfConnection;
             //
             // Creating Of Connection
             //
             try
             {
-                //PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
+                IPhrmInf = _IPhrmInf;
 
-                IPhrmInf = NinjectDependencyResolver.kernel.Get<IPharmacyInformation>(); // new PhrmInfTESTEntities(StringOfConnection);
-                //PhrmInf = IPhrmInf.EFPhrmInf;
-
-                LDC = new LocalDataContext(StringOfConnection);
-                //ConnectionToBase = new SqlConnection(this.StringOfConnection);
+                LDC = new LocalDataContext(IPhrmInf.EFPhrmInf.Database.Connection);
             }
             catch (Exception E)
             {
