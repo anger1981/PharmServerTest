@@ -22,7 +22,7 @@ namespace PharmaceuticalInformation.Server
 
         #region ' Fields '
 
-        private PhrmInfTESTEntities PhrmInf;
+        //private PhrmInfTESTEntities PhrmInf;
         private IPharmacyInformation IPhrmInf;
 
         private LocalDataContext LDC;
@@ -57,7 +57,7 @@ namespace PharmaceuticalInformation.Server
                 //PhrmInf = new PhrmInfTESTEntities(StringOfConnection);
 
                 IPhrmInf = NinjectDependencyResolver.kernel.Get<IPharmacyInformation>(); // new PhrmInfTESTEntities(StringOfConnection);
-                PhrmInf = IPhrmInf.EFPhrmInf;
+                //PhrmInf = IPhrmInf.EFPhrmInf;
 
                 LDC = new LocalDataContext(StringOfConnection);
                 //ConnectionToBase = new SqlConnection(this.StringOfConnection);
@@ -96,9 +96,9 @@ namespace PharmaceuticalInformation.Server
             try
             {
                 DateOfExported = LDC.GetSystemDate();  // Convert.ToDateTime(GettingData.ExecuteScalar());
-                LastDateOfExported = PhrmInf.Services.Where(s => s.Id_Service == 8).Select(s => s.Date_Service).Max();
+                LastDateOfExported = IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 8).Select(s => s.Date_Service).Max();
 
-                int NumberOfExported = PhrmInf.Services.Where(s => s.Id_Service == 8).Select(s => s.Value).Max(); //Convert.ToInt32(GettingData.ExecuteScalar());
+                int NumberOfExported = IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 8).Select(s => s.Value).Max(); //Convert.ToInt32(GettingData.ExecuteScalar());
                 //
                 ExportedDataSet.Tables.Add("DateOfExported");
                 ExportedDataSet.Tables["DateOfExported"].Columns.Add("DateOfExported", typeof(DateTime));
@@ -126,7 +126,7 @@ namespace PharmaceuticalInformation.Server
 
                 try
                 {
-                    PhrmInf.Pharmacies.Where(ph => ph.Date_upd >= LastDateOfExported && ph.Date_upd <= DateOfExported)                
+                    IPhrmInf.EFPhrmInf.Pharmacies.Where(ph => ph.Date_upd >= LastDateOfExported && ph.Date_upd <= DateOfExported)                
                         .Select(ph => new
                             {
                                 ID = ph.Id_Pharmacy,
@@ -149,7 +149,7 @@ namespace PharmaceuticalInformation.Server
 
                 try
                 {
-                    PhrmInf.Product_group.Where(pg => pg.Date_upd >= LastDateOfExported && pg.Date_upd <= DateOfExported)                
+                    IPhrmInf.EFPhrmInf.Product_group.Where(pg => pg.Date_upd >= LastDateOfExported && pg.Date_upd <= DateOfExported)                
                         .Select(pg => new
                             {
                                 ID = pg.Id_product_group,
@@ -166,7 +166,7 @@ namespace PharmaceuticalInformation.Server
 
                 try
                 {
-                    PhrmInf.Products.Where(pr => pr.Date_upd >= LastDateOfExported && pr.Date_upd <= DateOfExported)                
+                    IPhrmInf.EFPhrmInf.Products.Where(pr => pr.Date_upd >= LastDateOfExported && pr.Date_upd <= DateOfExported)                
                         .Select(pr => new
                             {
                                 ID = pr.Id_Product,
@@ -186,7 +186,7 @@ namespace PharmaceuticalInformation.Server
 
                 try
                 {
-                    PhrmInf.Announcements.Where(a => a.DateOfUpdating >= LastDateOfExported && a.DateOfUpdating <= DateOfExported)                
+                    IPhrmInf.EFPhrmInf.Announcements.Where(a => a.DateOfUpdating >= LastDateOfExported && a.DateOfUpdating <= DateOfExported)                
                         .Select(a => new
                             {
                                 ID_PH = a.ID_PH,
@@ -224,7 +224,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.Services.Where(s => s.Id_Service == 8)
+                IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 8)
                     .Update(s => new Test_pharm_server.Service { Date_Service = DateOfExported });
             }
             catch (Exception E)
@@ -248,7 +248,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.Services.Where(s => s.Id_Service == 8)
+                IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 8)
                     .Update(s => new Test_pharm_server.Service { Value = s.Value + 1 });
             }
             catch (Exception E)
@@ -279,8 +279,8 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                CountOfExportedPrices = PhrmInf.price_list
-                    .Where(p => p.Date_upd > PhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Date_Service).Max()).Count();
+                CountOfExportedPrices = IPhrmInf.EFPhrmInf.price_list
+                    .Where(p => p.Date_upd > IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Date_Service).Max()).Count();
             }
             catch (Exception E)
             {
@@ -308,7 +308,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                NumberOfExported = PhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Value).Max();
+                NumberOfExported = IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Value).Max();
             }
             catch (Exception E)
             {
@@ -333,7 +333,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                DateOfExported = PhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Date_Service).Max();
+                DateOfExported = IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 6).Select(s => s.Date_Service).Max();
             }
             catch (Exception E)
             {
@@ -358,7 +358,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                DateOfExported = PhrmInf.price_list.Select(p => p.Date_upd).Max();
+                DateOfExported = IPhrmInf.EFPhrmInf.price_list.Select(p => p.Date_upd).Max();
             }
             catch (Exception E)
             {
@@ -388,7 +388,7 @@ namespace PharmaceuticalInformation.Server
 
             try
             {
-                IEnumerable<PriceListGlobal> ExportedPriceListsIEn = PhrmInf.price_list.Where(pl => !pl.Is_deleted).Select(pl => new PriceListGlobal
+                IEnumerable<PriceListGlobal> ExportedPriceListsIEn = IPhrmInf.EFPhrmInf.price_list.Where(pl => !pl.Is_deleted).Select(pl => new PriceListGlobal
                 {
                     ID_DR = pl.Id_Pharmacy
                     ,
@@ -515,7 +515,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.Services.Where(s => s.Id_Service == 6)
+                IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 6)
                     .Update(s => new Test_pharm_server.Service { Value = s.Value + 1, Date_Service = DateOfExported });
             }
             catch (Exception E)
@@ -549,7 +549,7 @@ namespace PharmaceuticalInformation.Server
                     try
                     {
                         foreach(DataRow del_row in IDsOfModifications.Rows)
-                            PhrmInf.C__ModifiedData.Where(md => Convert.ToInt32(del_row["IDOfModification"]) == md.ID).Delete();   /// JoinDataTable(ref IDsOfModifications, md.ID)).Delete();                 
+                            IPhrmInf.EFPhrmInf.C__ModifiedData.Where(md => Convert.ToInt32(del_row["IDOfModification"]) == md.ID).Delete();   /// JoinDataTable(ref IDsOfModifications, md.ID)).Delete();                 
                     }
                     catch (Exception E) 
                     { this.RecordingInLogFile(String.Format("Ошибка при удалении ID изменений: {0}", E.Message)); }
@@ -589,7 +589,7 @@ namespace PharmaceuticalInformation.Server
 
             try
             {
-                PhrmInf.Services.Where(s => s.Id_Service == 10)
+                IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 10)
                     .UpdateAsync(s => new Test_pharm_server.Service { Date_Service = DateOfExported });
             }
             catch (Exception E)
@@ -616,7 +616,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.price_list.Where(p => p.Date_upd >= PhrmInf.Services.Where(s => s.Id_Service == 10)
+                IPhrmInf.EFPhrmInf.price_list.Where(p => p.Date_upd >= IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 10)
                 .Select(s => s.Date_Service).Max() && p.Date_upd <= DateOfExported)
                 .Fill(ref PriceListForExporting);
             }
@@ -681,7 +681,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.price_list.Where(p => p.Date_upd >= PhrmInf.Services.Where(s => s.Id_Service == 10)
+                IPhrmInf.EFPhrmInf.price_list.Where(p => p.Date_upd >= IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 10)
                 .Select(s => s.Date_Service).Max() && p.Date_upd <= DateOfExported)
                 .Fill(ref PriceListForExporting);
             }
@@ -802,7 +802,7 @@ namespace PharmaceuticalInformation.Server
             // Initializing Of Variables
             //
             bool SuccessfulFilling = true;
-            DateTime MaxDateService = PhrmInf.Services.Where(s => s.Id_Service == 10).Select(s => s.Date_Service).Max();
+            DateTime MaxDateService = IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == 10).Select(s => s.Date_Service).Max();
             //
             DataTable InformationOfExporting = new DataTable("InformationOfExporting");
             InformationOfExporting.Columns.Add("Key", typeof(string));
@@ -816,7 +816,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.price_list.Where(p => p.Date_upd >= MaxDateService && p.Date_upd <= DateOfExported)
+                IPhrmInf.EFPhrmInf.price_list.Where(p => p.Date_upd >= MaxDateService && p.Date_upd <= DateOfExported)
                     .Select(p => new
                         {
                             ID_PH = p.Id_Pharmacy,
@@ -835,11 +835,11 @@ namespace PharmaceuticalInformation.Server
             }
             //
             try
-            {                
-                PhrmInf.HistoryOfReceptions.Where(hr => hr.DateOfReception >= MaxDateService && hr.DateOfReception <= DateOfExported)
+            {
+                IPhrmInf.EFPhrmInf.HistoryOfReceptions.Where(hr => hr.DateOfReception >= MaxDateService && hr.DateOfReception <= DateOfExported)
                     .Join
                     (
-                        PhrmInf.ReportsOfImportingOfPriceLists
+                        IPhrmInf.EFPhrmInf.ReportsOfImportingOfPriceLists
                         .Where(ripl => ripl.FullPriceList && ((ripl.CountNotConfirmed + ripl.CountOfAdditions + ripl.CountOfChanges + ripl.CountOfDeletings) > 0))
                         , hr => hr.ID, ripl => ripl.ID_HR 
                         , (hr, ripl) => new { ID =  ripl.ID_PH, Date = hr.DateOfReception}
@@ -1607,7 +1607,7 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable ModifiedData = new DataTable("Drugstores");
 
-            PhrmInf.Pharmacies.Where(ph => ph.Date_upd >= DateOfStartingModification && ph.Date_upd <= DateOfEndingModification)
+            IPhrmInf.EFPhrmInf.Pharmacies.Where(ph => ph.Date_upd >= DateOfStartingModification && ph.Date_upd <= DateOfEndingModification)
                 .Select(ph => new
                 {
                     ID = ph.Id_Pharmacy,
@@ -1636,7 +1636,7 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable ModifiedData = new DataTable("GroupsOfProducts");
 
-            PhrmInf.Product_group.Where(pg => pg.Date_upd >= DateOfStartingModification && pg.Date_upd <= DateOfEndingModification)
+            IPhrmInf.EFPhrmInf.Product_group.Where(pg => pg.Date_upd >= DateOfStartingModification && pg.Date_upd <= DateOfEndingModification)
                 .Select(pg => new
                 {
                     ID = pg.Id_product_group,
@@ -1659,7 +1659,7 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable ModifiedData = new DataTable("Products");
 
-            PhrmInf.Products.Where(pr => pr.Date_upd >= DateOfStartingModification && pr.Date_upd <= DateOfEndingModification)
+            IPhrmInf.EFPhrmInf.Products.Where(pr => pr.Date_upd >= DateOfStartingModification && pr.Date_upd <= DateOfEndingModification)
                 .Select(pr => new
                 {
                     ID = pr.Id_Product,
@@ -1685,7 +1685,7 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable ModifiedData = new DataTable("PriceLists");
 
-            PhrmInf.price_list.Where(pl => pl.Date_upd >= DateOfStartingModification && pl.Date_upd <= DateOfEndingModification)
+            IPhrmInf.EFPhrmInf.price_list.Where(pl => pl.Date_upd >= DateOfStartingModification && pl.Date_upd <= DateOfEndingModification)
                 .Select(pl => new
                 {
                     ID_PH = pl.Id_Pharmacy,
@@ -1710,12 +1710,12 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable ModifiedData = new DataTable("DatesOfPriceLists");
 
-            PhrmInf.HistoryOfReceptions.Where(hr => hr.DateOfReception >= DateOfStartingModification && hr.DateOfReception <= DateOfEndingModification)
-                .Join(PhrmInf.ReportsOfImportingOfPriceLists
+            IPhrmInf.EFPhrmInf.HistoryOfReceptions.Where(hr => hr.DateOfReception >= DateOfStartingModification && hr.DateOfReception <= DateOfEndingModification)
+                .Join(IPhrmInf.EFPhrmInf.ReportsOfImportingOfPriceLists
                 .Where(ripl => ripl.FullPriceList && ((ripl.CountNotConfirmed + ripl.CountOfAdditions + ripl.CountOfChanges + ripl.CountOfDeletings) > 0))
-                , hr => hr.ID
-                , ripl => ripl.ID_HR
-                , (hr, ripl) => new { ID = ripl.ID_PH, Date = hr.DateOfReception }).Fill(ref ModifiedData);
+                ,hr => hr.ID
+                ,ripl => ripl.ID_HR
+                ,(hr, ripl) => new { ID = ripl.ID_PH, Date = hr.DateOfReception }).Fill(ref ModifiedData);
             //
             // Return
             //
@@ -1731,7 +1731,7 @@ namespace PharmaceuticalInformation.Server
             //
             DataTable ModifiedData = new DataTable("CountOfExported"); // Announcements
 
-            PhrmInf.Announcements.Where(a => a.DateOfUpdating >= DateOfStartingModification && a.DateOfUpdating <= DateOfEndingModification)
+            IPhrmInf.EFPhrmInf.Announcements.Where(a => a.DateOfUpdating >= DateOfStartingModification && a.DateOfUpdating <= DateOfEndingModification)
                 .Select(a => new
                 {
                     ID_PH = a.ID_PH,
@@ -1787,7 +1787,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                ReturnedDate = PhrmInf.Services.Where(s => s.Id_Service == IDOfDate)
+                ReturnedDate = IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == IDOfDate)
                     .Select(s => s.Date_Service).Max();
             }
             catch (Exception E)
@@ -1813,7 +1813,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                ReturnedNumber = PhrmInf.Services.Where(s => s.Id_Service == IDOfNumber)
+                ReturnedNumber = IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == IDOfNumber)
                     .Select(s => s.Value).Max();
             }
             catch (Exception E)
@@ -1837,7 +1837,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.Services.Where(s => s.Id_Service == IDOfNumber)
+                IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == IDOfNumber)
                     .Update(s => new Test_pharm_server.Service { Value = NewNumber });
             }
             catch (Exception E)
@@ -1855,7 +1855,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.Services.Where(s => s.Id_Service == IDOfDate)
+                IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == IDOfDate)
                     .Update(s => new Test_pharm_server.Service { Date_Service = NewDate });
             }
             catch (Exception E)
@@ -1873,7 +1873,7 @@ namespace PharmaceuticalInformation.Server
             //
             try
             {
-                PhrmInf.Services.Where(s => s.Id_Service == IDOfNumber)
+                IPhrmInf.EFPhrmInf.Services.Where(s => s.Id_Service == IDOfNumber)
                     .Update(s => new Test_pharm_server.Service { Value = s.Value + 1 });
             }
             catch (Exception E)
